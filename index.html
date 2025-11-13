@@ -6,438 +6,414 @@
   <title>APUSH Unit 5 Clicker</title>
   <style>
     :root {
-      --bg: #0b1220;
-      --card: #111a2e;
-      --muted: #a9b5d9;
-      --text: #eef1fb;
-      --accent: #7aa2ff;
-      --accent-2: #66e3c4;
-      --danger: #ff7a7a;
-      --gold: #ffd166;
-      --shadow: 0 10px 30px rgba(0, 0, 0, .35);
-      --radius: 18px;
-      --target-size: 56px;
-      --target-pad: 10px;
-      --move-ms: 260ms;
+      --bg:#0b1220; --card:#111a2e; --muted:#a9b5d9; --text:#eef1fb;
+      --accent:#7aa2ff; --accent-2:#66e3c4; --danger:#ff7a7a; --gold:#ffd166;
+      --shadow:0 10px 30px rgba(0,0,0,.35); --radius:18px;
+      --target-size:56px; --target-pad:10px; --move-ms:260ms;
     }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      margin: 0;
-      background: radial-gradient(1000px 600px at 15% 10%, #0f1830 0%, var(--bg) 50%),
-                  radial-gradient(800px 500px at 85% 20%, #0c1a33 0%, var(--bg) 50%);
-      color: var(--text);
-      font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial;
-    }
-    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
-    header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px; }
-    h1 { font-size: 28px; margin: 0; }
-    .subtitle { color: var(--muted); font-size: 13px; }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;background:radial-gradient(1000px 600px at 15% 10%, #0f1830 0%, var(--bg) 50%),
+                        radial-gradient(800px 500px at 85% 20%, #0c1a33 0%, var(--bg) 50%);
+         color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,"Helvetica Neue",Arial}
+    .wrap{max-width:1100px;margin:0 auto;padding:24px}
+    header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px}
+    h1{font-size:28px;margin:0}.subtitle{color:var(--muted);font-size:13px}
 
-    .grid { display: grid; grid-template-columns: 1.4fr .9fr .7fr; gap: 16px; }
-    @media (max-width: 920px) { .grid { grid-template-columns: 1fr; } }
+    .grid{display:grid;grid-template-columns:1.4fr .9fr .7fr;gap:16px}
+    @media (max-width:920px){.grid{grid-template-columns:1fr}}
 
-    .card {
-      background: linear-gradient(180deg, rgba(255, 255, 255, .02), rgba(255, 255, 255, 0));
-      border: 1px solid rgba(255, 255, 255, .06);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-    .card .head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,.06); }
-    .card .body { padding: 16px; }
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);
+          border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .card .head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+    .card .body{padding:16px}
 
     /* Click Area */
-    .click-area {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 1/1;
-      border-radius: 24px;
-      background:
-        radial-gradient(200px 200px at 30% 25%, rgba(255, 255, 255, .12), rgba(255, 255, 255, 0) 60%),
-        linear-gradient(180deg, #1a2a53, #121d3a);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, .5), inset 0 0 0 2px rgba(255, 255, 255, .06);
-      overflow: hidden;
-    }
+    .click-area{position:relative;width:100%;aspect-ratio:1/1;border-radius:24px;
+      background:radial-gradient(200px 200px at 30% 25%, rgba(255,255,255,.12), transparent 60%),
+                 linear-gradient(180deg,#1a2a53,#121d3a);
+      box-shadow:0 20px 60px rgba(0,0,0,.5), inset 0 0 0 2px rgba(255,255,255,.06);
+      overflow:hidden}
 
-    /* Moving Target */
-    .target {
-      position: absolute;
-      width: var(--target-size);
-      height: var(--target-size);
-      border-radius: 50%;
+    /* Moving Target (no halo) */
+    .target{position:absolute;width:var(--target-size);height:var(--target-size);border-radius:50%;
       background:
         radial-gradient(140% 140% at 30% 25%,
-          rgba(255, 255, 255, .35) 0%,
-          rgba(255, 255, 255, .16) 36%,
-          rgba(255, 255, 255, .08) 58%,
-          rgba(255, 255, 255, 0) 78%
-        ),
-        linear-gradient(180deg, #7aa2ff, #4f7ef0);
-      background-clip: padding-box;
-      color: #0b1124;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      cursor: pointer;
-      user-select: none;
-      transition: left var(--move-ms) cubic-bezier(.2,.8,.2,1),
-                  top var(--move-ms) cubic-bezier(.2,.8,.2,1),
-                  transform .06s ease, filter .15s ease;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, .45), inset 0 0 0 2px rgba(255, 255, 255, .22);
-    }
-    .target:hover { filter: brightness(1.08); }
-    .target:active { transform: scale(.97); }
+          rgba(255,255,255,.35) 0%,
+          rgba(255,255,255,.16) 36%,
+          rgba(255,255,255,.08) 58%,
+          rgba(255,255,255,0) 78%),
+        linear-gradient(180deg,#7aa2ff,#4f7ef0);
+      background-clip:padding-box;color:#0b1124;display:flex;align-items:center;justify-content:center;font-weight:900;cursor:pointer;user-select:none;
+      transition:left var(--move-ms) cubic-bezier(.2,.8,.2,1), top var(--move-ms) cubic-bezier(.2,.8,.2,1), transform .06s ease, filter .15s ease;
+      box-shadow:0 10px 28px rgba(0,0,0,.45), inset 0 0 0 2px rgba(255,255,255,.22)}
+    .target:hover{filter:brightness(1.08)} .target:active{transform:scale(.97)}
 
-    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-    .pill { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,.1); padding: 8px 10px; border-radius: 999px; background: rgba(255,255,255,.03); font-size: 13px; color: var(--muted); }
-    .pill strong { color: var(--text); }
+    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .pill{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.1);padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.03);font-size:13px;color:var(--muted)}
+    .pill strong{color:var(--text)}
+    .btn{border:none;border-radius:12px;padding:10px 12px;font-weight:700;cursor:pointer;transition:filter .15s, transform .06s}
+    .btn:hover{filter:brightness(1.08)} .btn:active{transform:translateY(1px)}
+    .btn.gold{background:linear-gradient(180deg,#f7d36f,#d8aa39);color:#281a00}
+    .btn.accent{background:linear-gradient(180deg,#7aa2ff,#4f7ef0);color:#0c1330}
+    .btn.alt{background:linear-gradient(180deg,#66e3c4,#35c2a2);color:#06241b}
 
-    .btn { border: none; border-radius: 12px; padding: 10px 12px; font-weight: 700; cursor: pointer; transition: filter .15s, transform .06s; }
-    .btn:hover { filter: brightness(1.08); }
-    .btn:active { transform: translateY(1px); }
-    .btn.gold { background: linear-gradient(180deg, #f7d36f, #d8aa39); color: #281a00; }
-    .btn.accent { background: linear-gradient(180deg, #7aa2ff, #4f7ef0); color: #0c1330; }
-    .btn.alt { background: linear-gradient(180deg, #66e3c4, #35c2a2); color: #06241b; }
+    .list{display:flex;flex-direction:column;gap:10px}
+    .item{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+    .item .meta{display:flex;flex-direction:column;gap:2px}.item .title{font-weight:700}.item .note{font-size:12px;color:var(--muted)}
 
-    .list { display: flex; flex-direction: column; gap: 10px; }
-    .item { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 12px; border-radius: 14px; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06); }
-    .item .meta { display: flex; flex-direction: column; gap: 2px; }
-    .item .title { font-weight: 700; }
-    .item .note { font-size: 12px; color: var(--muted); }
-
-    .meter { height: 10px; width: 100%; background: rgba(255,255,255,.06); border-radius: 999px; overflow: hidden; }
-    .meter > div { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
-
-    .money { font-size: 24px; font-weight: 900; }
+    .meter{height:10px;width:100%;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden}
+    .meter>div{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+    .money{font-size:24px;font-weight:900}
+    .small{font-size:12px;color:var(--muted)}
 
     /* Dialogs */
-    dialog { border: none; border-radius: 18px; width: min(560px, 92%); background: var(--card); color: var(--text); box-shadow: var(--shadow); }
-    dialog::backdrop { background: rgba(5,10,20,.6); }
-    .modal-head { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,.06); display: flex; justify-content: space-between; align-items: center; }
-    .modal-body { padding: 16px; }
+    dialog{border:none;border-radius:18px;width:min(560px,92%);background:var(--card);color:var(--text);box-shadow:var(--shadow)}
+    dialog::backdrop{background:rgba(5,10,20,.6)}
+    .modal-head{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center}
+    .modal-body{padding:16px}
 
-    /* Choices - improved visibility */
-    .choices { display: grid; gap: 10px; margin-top: 10px; }
-    .choice {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.18);
-      padding: 10px 12px;
-      border-radius: 12px;
-      cursor: pointer;
-      color: var(--text);
-      transition: background .15s ease, border-color .15s ease, transform .05s ease;
-    }
-    .choice:hover {
-      background: rgba(255,255,255,.12);
-      border-color: rgba(255,255,255,.28);
-      transform: translateY(-1px);
-    }
-    .choice.correct {
-      border-color: var(--accent-2);
-      background: rgba(102,227,196,.15);
-    }
-    .choice.wrong {
-      border-color: var(--danger);
-      background: rgba(255,122,122,.12);
-    }
-
-    .small { font-size: 12px; color: var(--muted); }
+    /* Choices – higher contrast */
+    .choices{display:grid;gap:10px;margin-top:10px}
+    .choice{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);
+      padding:10px 12px;border-radius:12px;cursor:pointer;color:var(--text);
+      transition:background .15s,border-color .15s,transform .05s}
+    .choice:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.28);transform:translateY(-1px)}
+    .choice.correct{border-color:var(--accent-2);background:rgba(102,227,196,.15)}
+    .choice.wrong{border-color:var(--danger);background:rgba(255,122,122,.12)}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div>
-        <h1>APUSH Unit 5 Clicker</h1>
-        <div class="subtitle">Earn <strong>USD</strong> by clicking, buying upgrades, and answering Unit 5 questions (1844–1877).</div>
-      </div>
-      <div class="row">
-        <button id="saveBtn" class="btn alt">💾 Save</button>
-        <button id="prestigeBtn" class="btn gold">🌀 Prestige</button>
-      </div>
-    </header>
-
-    <div class="grid">
-      <section class="card">
-        <div class="head">
-          <div class="row">
-            <div>
-              <div id="currency" class="money">$0</div>
-              <div class="subtitle">Dollars</div>
-            </div>
-            <div class="pill"><span>🖱️ $/Click:</span><strong id="ppc">1</strong></div>
-            <div class="pill"><span>⏱️ $/s:</span><strong id="pps">0</strong></div>
-            <div class="pill"><span>⚡ Mult:</span><strong id="mult">1×</strong></div>
-            <div class="pill"><span>✨ Prestige:</span><strong id="prestige">0 (×1)</strong></div>
-          </div>
-        </div>
-        <div class="body">
-          <div id="clickArea" class="click-area">
-            <button id="targetBtn" class="target">$</button>
-          </div>
-          <p class="small" style="margin-top:10px;">Click the moving target to earn money.</p>
-          <div class="row" style="margin-top:10px;">
-            <button id="boostBtn" class="btn gold">🎁 Quiz Boost</button>
-            <span id="boostTimer" class="pill">⏳ Boost: <strong>—</strong></span>
-          </div>
-          <div style="margin-top:10px;">
-            <div class="meter"><div id="progressBar"></div></div>
-            <div class="small muted" id="nextGoal">Goal: Reach $100,000,000</div>
-          </div>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="head"><strong>Upgrades</strong></div>
-        <div class="body"><div id="upgradeList" class="list"></div></div>
-      </section>
-
-      <section class="card">
-        <div class="head"><strong>Producers</strong></div>
-        <div class="body"><div id="producerList" class="list"></div></div>
-      </section>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>APUSH Unit 5 Clicker</h1>
+      <div class="subtitle">Earn <strong>USD</strong> by clicking, buying upgrades, and answering Unit 5 questions (1844–1877).</div>
     </div>
+    <div class="row">
+      <button id="saveBtn" class="btn alt">💾 Save</button>
+      <button id="prestigeBtn" class="btn gold">🌀 Prestige</button>
+    </div>
+  </header>
 
-    <footer class="small muted" style="margin-top:18px"></footer>
+  <div class="grid">
+    <section class="card">
+      <div class="head">
+        <div class="row">
+          <div>
+            <div id="currency" class="money">$0</div>
+            <div class="subtitle">Dollars</div>
+          </div>
+          <div class="pill"><span>🖱️ $/Click:</span><strong id="ppc">1</strong></div>
+          <div class="pill"><span>⏱️ $/s:</span><strong id="pps">0</strong></div>
+          <div class="pill"><span>⚡ Mult:</span><strong id="mult">1×</strong></div>
+          <div class="pill"><span>✨ Prestige:</span><strong id="prestige">0 (×1)</strong></div>
+        </div>
+      </div>
+      <div class="body">
+        <div id="clickArea" class="click-area">
+          <button id="targetBtn" class="target" aria-label="Click for money">$</button>
+        </div>
+        <p class="small" style="margin-top:10px;">Click the moving target to earn money.</p>
+        <div class="row" style="margin-top:10px;">
+          <button id="boostBtn" class="btn gold">🎁 Quiz Boost</button>
+          <span id="boostTimer" class="pill">⏳ Boost: <strong>—</strong></span>
+        </div>
+        <div style="margin-top:10px;">
+          <div class="meter"><div id="progressBar"></div></div>
+          <div class="small muted" id="nextGoal">Goal: Reach $100,000,000</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card"><div class="head"><strong>Upgrades</strong></div><div class="body"><div id="upgradeList" class="list"></div></div></section>
+    <section class="card"><div class="head"><strong>Producers</strong></div><div class="body"><div id="producerList" class="list"></div></div></section>
   </div>
+</div>
 
-  <dialog id="quizModal">
-    <div class="modal-head"><strong>Answer a Unit 5 question</strong><button id="closeQuiz" class="btn">✖</button></div>
-    <div class="modal-body">
-      <div class="small muted">Get the answer right to pick a reward.</div>
-      <h3 id="qText"></h3>
-      <div id="qChoices" class="choices"></div>
-      <div class="footer" style="margin-top:10px; text-align:right;">
-        <button id="rerollBtn" class="btn alt">🔁 New Question</button>
-      </div>
+<!-- Quiz modal -->
+<dialog id="quizModal" aria-labelledby="quizTitle" aria-describedby="quizDesc">
+  <div class="modal-head">
+    <strong id="quizTitle">Answer a Unit 5 question</strong>
+    <button id="closeQuiz" class="btn">✖</button>
+  </div>
+  <div class="modal-body">
+    <div id="quizDesc" class="small">Get the answer right to pick a reward.</div>
+    <h3 id="qText" style="margin:.6em 0 .4em"></h3>
+    <div id="qChoices" class="choices" role="list"></div>
+    <div class="footer" style="margin-top:10px;text-align:right;">
+      <button id="rerollBtn" class="btn alt">🔁 New Question</button>
     </div>
-  </dialog>
+  </div>
+</dialog>
 
 <script>
 window.addEventListener('DOMContentLoaded', () => {
-  const $  = s => document.querySelector(s);
+  const $ = s => document.querySelector(s);
   const $$ = s => document.querySelectorAll(s);
 
-  /* ---------- STATE ---------- */
+  /* -------- Storage detection -------- */
+  const STORAGE_OK = (()=>{ try{ const t='__apush5__'; localStorage.setItem(t,'1'); localStorage.removeItem(t); return true; }catch(_){ return false; } })();
+
+  /* -------- State -------- */
   const state = {
-    points: 0,
-    basePpc: 1,
-    ppcMult: 1,
-    pps: 0,
-    goal: 100000000,
-    prestige: 0,
-    endless: false,
-    upgrades: [],    // <-- needed
-    producers: []    // <-- needed
+    points: 0, basePpc: 1, ppcMult: 1, pps: 0,
+    goal: 100000000, prestige: 0, endless: false,
+    upgrades: [], producers: [],
+    boostEndsAt: 0, lastTick: performance.now()
   };
 
-  /* ---------- DATA ---------- */
+  /* -------- Data -------- */
   const price = (base,n)=>Math.floor(base*Math.pow(1.55,n));
-  const UPGRADE_DATA = [
-    { id:'ppc', name:'PPC Upgrade', desc:'+1 $/Click', ppc:1, baseCost:50 }
-  ];
+  const UPGRADE_DATA = [{ id:'ppc', name:'PPC Upgrade', desc:'+1 $/Click', ppc:1, baseCost:50 }];
   const PRODUCER_DATA = [
-    { id:'pamphleteers', name:'Abolitionist Pamphleteers', basePps:0.05, baseCost:200 }
+    { id:'pamphleteers', name:'Abolitionist Pamphleteers', basePps:0.05, baseCost:200 },
+    { id:'republican-clubs', name:'Republican Clubs', basePps:0.2, baseCost:1500 }
   ];
 
-  /* ---------- DOM REFS ---------- */
-  const moneyEl    = $('#currency');
-  const ppcEl      = $('#ppc');
-  const ppsEl      = $('#pps');
-  const multEl     = $('#mult');
-  const prestigeEl = $('#prestige');
-  const progressEl = $('#progressBar');
-  const nextGoalEl = $('#nextGoal');
+  // APUSH Unit 5 (sample; add more anytime)
+  const QUIZ = [
+    {q:'What concept justified U.S. expansion to the Pacific?', c:['Containment','Manifest Destiny','Isolationism','Popular Sovereignty'], a:1},
+    {q:'Which war was sparked in part by the annexation of Texas?', c:['Spanish-American War','War of 1812','Mexican–American War','Civil War'], a:2},
+    {q:"Lincoln's Ten Percent Plan aimed to...", c:['punish Confederates severely','require majority loyalty oaths','offer lenient readmission for states','delay readmission until 1900'], a:2},
+    {q:'Which amendment abolished slavery?', c:['13th','14th','15th','16th'], a:0},
+    {q:'The Compromise of 1877 resulted in...', c:['renewed Radical Reconstruction','federal troops withdrawn from the South','immediate Black suffrage','annexation of Cuba'], a:1},
+  ];
 
-  const upgradeList  = $('#upgradeList');
-  const producerList = $('#producerList');
+  /* -------- Persistence -------- */
+  function save(){
+    if(!STORAGE_OK) return;
+    try{ localStorage.setItem('apush5-save', JSON.stringify(state)); }catch(e){ console.warn('save failed', e); }
+  }
+  function load(){
+    if(!STORAGE_OK) return;
+    const raw = localStorage.getItem('apush5-save'); if(!raw) return;
+    try{
+      const d = JSON.parse(raw);
+      Object.assign(state, d);
+    }catch(e){ console.warn('load failed', e); }
+  }
 
-  const clickArea = $('#clickArea');
-  const targetBtn = $('#targetBtn');
+  /* -------- DOM -------- */
+  const moneyEl=$('#currency'), ppcEl=$('#ppc'), ppsEl=$('#pps'), multEl=$('#mult'), prestigeEl=$('#prestige');
+  const progressBar=$('#progressBar'), nextGoalEl=$('#nextGoal'), boostTimer=$('#boostTimer strong');
+  const upgradeList=$('#upgradeList'), producerList=$('#producerList');
 
-  const boostBtn   = $('#boostBtn');
-  const quizModal  = $('#quizModal');
-  const qText      = $('#qText');
-  const qChoices   = $('#qChoices');
-  const closeQuiz  = $('#closeQuiz');
-  const reroll     = $('#rerollBtn');
+  const clickArea=$('#clickArea'), targetBtn=$('#targetBtn');
+  const boostBtn=$('#boostBtn'), quizModal=$('#quizModal'), closeQuiz=$('#closeQuiz'), rerollBtn=$('#rerollBtn');
+  const qText=$('#qText'), qChoices=$('#qChoices');
 
-  /* ---------- INIT CONTENT ---------- */
+  const saveBtn=$('#saveBtn'), prestigeBtn=$('#prestigeBtn');
+
+  /* -------- Init content -------- */
   function initContent(){
-    if(!state.upgrades.length){
-      state.upgrades = UPGRADE_DATA.map(u => ({...u, level:0}));
-    }
-    if(!state.producers.length){
-      state.producers = PRODUCER_DATA.map(p => ({...p, level:0}));
-    }
+    if(!state.upgrades.length)  state.upgrades  = UPGRADE_DATA.map(u=>({...u, level:0}));
+    if(!state.producers.length) state.producers = PRODUCER_DATA.map(p=>({...p, level:0}));
   }
 
-  /* ---------- FORMAT / HUD ---------- */
-  function fmt(n){
-    if(n>=1e9) return '$'+(n/1e9).toFixed(2)+'B';
-    if(n>=1e6) return '$'+(n/1e6).toFixed(2)+'M';
-    if(n>=1e3) return '$'+(n/1e3).toFixed(2)+'k';
-    return '$'+Math.floor(n);
-  }
+  /* -------- HUD -------- */
+  function fmt(n){ if(n>=1e9) return '$'+(n/1e9).toFixed(2)+'B';
+                   if(n>=1e6) return '$'+(n/1e6).toFixed(2)+'M';
+                   if(n>=1e3) return '$'+(n/1e3).toFixed(2)+'k';
+                   return '$'+Math.floor(n); }
 
   function updateHUD(){
     moneyEl.textContent = fmt(state.points);
-    ppcEl.textContent = fmt(state.basePpc * state.ppcMult);
-    ppsEl.textContent = '$' + state.pps.toFixed(2);
-    multEl.textContent = state.ppcMult.toFixed(1)+'×';
+    ppcEl.textContent   = fmt(state.basePpc * state.ppcMult);
+    ppsEl.textContent   = '$' + state.pps.toFixed(2);
+    multEl.textContent  = state.ppcMult.toFixed(1)+'×';
     prestigeEl.textContent = `${state.prestige} (×${state.prestige+1})`;
     const prog = Math.max(0, Math.min(1, state.points / state.goal));
-    progressEl.style.width = (prog*100).toFixed(1) + '%';
+    progressBar.style.width = (prog*100).toFixed(1)+'%';
     nextGoalEl.textContent = state.endless
       ? 'Endless mode unlocked! Keep going. Prestige for +1× permanent boost.'
       : `Goal: Reach ${fmt(state.goal)}`;
   }
 
-  /* ---------- RENDER: UPGRADES ---------- */
+  /* -------- Upgrades -------- */
   function renderUpgrades(){
-    upgradeList.innerHTML = '';
+    upgradeList.innerHTML='';
     state.upgrades.forEach(u=>{
-      const n = u.level;
-      const cost = price(u.baseCost, n);
-      const item = document.createElement('div');
-      item.className = 'item';
-      item.innerHTML = `
-        <div class="meta">
-          <div class="title">${u.name}</div>
-          <div class="note">${u.desc} • Owned: ${n} • Cost: ${fmt(cost)}</div>
-        </div>`;
+      const cost = price(u.baseCost, u.level);
+      const div = document.createElement('div');
+      div.className='item';
+      div.innerHTML = `<div class="meta"><div class="title">${u.name}</div>
+        <div class="note">${u.desc} • Owned: ${u.level} • Cost: ${fmt(cost)}</div></div>`;
       const btn = document.createElement('button');
-      btn.className = 'btn accent';
-      btn.textContent = 'Buy';
-      btn.disabled = state.points < cost;
+      btn.className='btn accent'; btn.textContent='Buy'; btn.disabled = state.points < cost;
       btn.addEventListener('click', ()=>{
         if(state.points < cost) return;
-        state.points -= cost;
-        u.level++;
-        state.basePpc += u.ppc;
-        updateHUD();
-        renderUpgrades();
+        state.points -= cost; u.level++; state.basePpc += u.ppc;
+        updateHUD(); renderUpgrades(); save();
       });
-      item.appendChild(btn);
-      upgradeList.appendChild(item);
+      div.appendChild(btn); upgradeList.appendChild(div);
     });
   }
 
-  /* ---------- RENDER: PRODUCERS ---------- */
-  function recomputePPS(){
-    let total = 0;
-    state.producers.forEach(p=> total += p.basePps * p.level);
-    state.pps = total;
-  }
-
+  /* -------- Producers -------- */
+  function recomputePPS(){ state.pps = state.producers.reduce((s,p)=>s + p.basePps*p.level, 0); }
   function renderProducers(){
-    producerList.innerHTML = '';
+    producerList.innerHTML='';
     state.producers.forEach(p=>{
-      const n = p.level;
-      const cost = price(p.baseCost, n);
-      const item = document.createElement('div');
-      item.className = 'item';
-      item.innerHTML = `
-        <div class="meta">
-          <div class="title">${p.name}</div>
-          <div class="note">+${p.basePps.toFixed(2)} $/s each • Owned: ${n} • Cost: ${fmt(cost)}</div>
-        </div>`;
+      const cost = price(p.baseCost, p.level);
+      const div = document.createElement('div');
+      div.className='item';
+      div.innerHTML = `<div class="meta"><div class="title">${p.name}</div>
+        <div class="note">+${p.basePps.toFixed(2)} $/s each • Owned: ${p.level} • Cost: ${fmt(cost)}</div></div>`;
       const btn = document.createElement('button');
-      btn.className = 'btn';
-      btn.textContent = 'Hire';
-      btn.disabled = state.points < cost;
+      btn.className='btn'; btn.textContent='Hire'; btn.disabled = state.points < cost;
       btn.addEventListener('click', ()=>{
         if(state.points < cost) return;
-        state.points -= cost;
-        p.level++;
-        recomputePPS();
-        updateHUD();
-        renderProducers();
+        state.points -= cost; p.level++; recomputePPS();
+        updateHUD(); renderProducers(); save();
       });
-      item.appendChild(btn);
-      producerList.appendChild(item);
+      div.appendChild(btn); producerList.appendChild(div);
     });
   }
 
-  /* ---------- AFFORDABILITY REFRESH ---------- */
   function refreshAffordability(){
     $$('#upgradeList .item').forEach((el,i)=>{
-      const u = state.upgrades[i];
-      const cost = price(u.baseCost, u.level);
-      el.querySelector('button').disabled = state.points < cost;
-      el.querySelector('.note').textContent = `${u.desc} • Owned: ${u.level} • Cost: ${fmt(cost)}`;
+      const u = state.upgrades[i], c = price(u.baseCost, u.level);
+      el.querySelector('button').disabled = state.points < c;
+      el.querySelector('.note').textContent = `${u.desc} • Owned: ${u.level} • Cost: ${fmt(c)}`;
     });
     $$('#producerList .item').forEach((el,i)=>{
-      const p = state.producers[i];
-      const cost = price(p.baseCost, p.level);
-      el.querySelector('button').disabled = state.points < cost;
-      el.querySelector('.note').textContent = `+${p.basePps.toFixed(2)} $/s each • Owned: ${p.level} • Cost: ${fmt(cost)}`;
+      const p = state.producers[i], c = price(p.baseCost, p.level);
+      el.querySelector('button').disabled = state.points < c;
+      el.querySelector('.note').textContent = `+${p.basePps.toFixed(2)} $/s each • Owned: ${p.level} • Cost: ${fmt(c)}`;
     });
   }
 
-  /* ---------- CLICK TARGET ---------- */
+  /* -------- Goal / Endless -------- */
+  function checkGoal(){
+    if(state.points >= state.goal){
+      if(state.goal >= 100000000){ state.endless = true; }
+      else { state.goal = Math.floor(state.goal * 2.7); }
+    }
+  }
+
+  /* -------- Moving target -------- */
   function moveTarget(){
     const a = clickArea.getBoundingClientRect(), s = 56, p = 10;
     const x = p + Math.random() * Math.max(0, a.width  - s - p);
     const y = p + Math.random() * Math.max(0, a.height - s - p);
-    targetBtn.style.left = x + 'px';
-    targetBtn.style.top  = y + 'px';
+    targetBtn.style.left = x + 'px'; targetBtn.style.top = y + 'px';
   }
-  const ro = new ResizeObserver(()=>moveTarget());
-  ro.observe(clickArea);
+  new ResizeObserver(()=>moveTarget()).observe(clickArea);
 
-  targetBtn.addEventListener('click', ()=>{
-    state.points += state.basePpc * state.ppcMult * (state.prestige + 1);
-    updateHUD();
-    refreshAffordability();
-    moveTarget();
+  targetBtn.addEventListener('click', (e)=>{
+    const gain = state.basePpc * state.ppcMult * (state.prestige + 1);
+    state.points += gain; checkGoal(); updateHUD(); refreshAffordability(); moveTarget(); save();
   });
+  targetBtn.addEventListener('keydown', (e)=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); targetBtn.click(); }});
 
-  /* ---------- QUIZ (minimal demo) ---------- */
-  const QUIZ=[{q:"Lincoln's Ten Percent Plan aimed to...",c:["punish Confederates severely","require majority loyalty oaths","offer lenient readmission for states","delay readmission until 1900"],a:2}];
-  let q=null;
-  function ask(){
-    q = QUIZ[Math.floor(Math.random()*QUIZ.length)];
-    qText.textContent = q.q;
-    qChoices.innerHTML='';
-    q.c.forEach((t,i)=>{
-      const b = document.createElement('button');
-      b.className='choice';
-      b.innerHTML = `<span class="pill">${String.fromCharCode(65+i)}</span> ${t}`;
-      b.onclick = ()=>{
-        if(i===q.a){ b.classList.add('correct'); } else { b.classList.add('wrong'); }
-        $$('.choice').forEach(x=> x.disabled=true);
-      };
-      qChoices.appendChild(b);
+  /* -------- Quiz System (with rewards) -------- */
+  let currentQ = null, rewarded = false;
+
+  function pickQuestion(){
+    currentQ = QUIZ[Math.floor(Math.random()*QUIZ.length)];
+    rewarded = false;
+    qText.textContent = currentQ.q;
+    qChoices.innerHTML = '';
+    currentQ.c.forEach((text, idx)=>{
+      const btn = document.createElement('button');
+      btn.type='button'; btn.className='choice';
+      btn.innerHTML = `<span class="pill">${String.fromCharCode(65+idx)}</span> <span>${text}</span>`;
+      btn.addEventListener('click', ()=> handleAnswer(idx, btn));
+      qChoices.appendChild(btn);
     });
   }
-  boostBtn.onclick = ()=>{ ask(); quizModal.showModal(); };
-  closeQuiz.onclick = ()=> quizModal.close();
-  reroll.onclick = ask;
 
-  /* ---------- PASSIVE INCOME LOOP ---------- */
-  let last = performance.now();
+  function handleAnswer(idx, el){
+    if(rewarded) return;
+    const correct = idx === currentQ.a;
+    $$('.choice').forEach(b=> b.disabled=true);
+    if(correct){
+      el.classList.add('correct'); showRewardChooser();
+      rewarded = true;
+    }else{
+      el.classList.add('wrong');
+      const msg = document.createElement('div');
+      msg.className='small'; msg.style.marginTop='8px';
+      msg.textContent='Not quite. Reroll or close and try again.';
+      qChoices.appendChild(msg);
+    }
+  }
+
+  function showRewardChooser(){
+    const wrap = document.createElement('div'); wrap.style.marginTop='12px';
+    wrap.innerHTML = `<div class="small">Nice! Pick your reward:</div>`;
+    const row = document.createElement('div'); row.className='row'; row.style.marginTop='8px';
+    const r1 = document.createElement('button'); r1.className='btn gold';   r1.textContent='2× $/Click for 60s';
+    const r2 = document.createElement('button'); r2.className='btn accent'; r2.textContent='Free cheapest upgrade';
+    r1.addEventListener('click', ()=>{ startBoost(60); quizModal.close(); });
+    r2.addEventListener('click', ()=>{ grantFreeUpgrade(); quizModal.close(); });
+    row.appendChild(r1); row.appendChild(r2); wrap.appendChild(row); qChoices.appendChild(wrap);
+  }
+
+  function startBoost(seconds){
+    state.ppcMult = 2;
+    state.boostEndsAt = performance.now() + seconds*1000;
+    boostTimer.textContent = seconds+'s';
+    updateHUD(); save();
+  }
+
+  function grantFreeUpgrade(){
+    const withCost = state.upgrades.map(u=>({u, cost: price(u.baseCost, u.level)}))
+                                   .sort((a,b)=>a.cost-b.cost);
+    const chosen = withCost[0].u;
+    chosen.level++; state.basePpc += chosen.ppc;
+    renderUpgrades(); updateHUD(); save();
+  }
+
+  boostBtn.addEventListener('click', ()=>{ pickQuestion(); quizModal.showModal(); });
+  closeQuiz.addEventListener('click', ()=> quizModal.close());
+  rerollBtn.addEventListener('click', pickQuestion);
+
+  /* -------- Prestige -------- */
+  function canPrestige(){ return state.points >= 100000000 || state.endless; }
+  function doPrestige(){
+    if(!canPrestige()) return;
+    if(!confirm('Prestige? Reset progress for a permanent +1× currency multiplier.')) return;
+    state.prestige = (state.prestige||0) + 1;
+    state.points=0; state.basePpc=1; state.ppcMult=1; state.pps=0;
+    state.boostEndsAt=0; state.endless=false; state.goal=100000000;
+    state.upgrades.forEach(u=>u.level=0); state.producers.forEach(p=>p.level=0);
+    recomputePPS(); renderUpgrades(); renderProducers(); updateHUD(); moveTarget(); save();
+  }
+  prestigeBtn.addEventListener('click', doPrestige);
+
+  /* -------- Save button -------- */
+  saveBtn.addEventListener('click', ()=>{
+    save();
+    const t=document.createElement('span'); t.textContent=' Saved! '; t.className='pill';
+    t.style.marginLeft='8px'; t.style.opacity='0.9'; saveBtn.after(t); setTimeout(()=>t.remove(),1200);
+  });
+  if(!STORAGE_OK){ saveBtn.disabled=true; saveBtn.title='Saving disabled on this origin.'; }
+
+  /* -------- Game loop -------- */
   function tick(){
     const now = performance.now();
-    const dt = Math.min(1, (now - last)/1000);
-    last = now;
+    const dt = Math.min(1, (now - state.lastTick)/1000);
+    state.lastTick = now;
+
+    // Passive $
     state.points += state.pps * dt * (state.prestige + 1);
-    updateHUD();
-    refreshAffordability();
+
+    // Boost timer
+    if(state.boostEndsAt > 0){
+      const remaining = Math.max(0, Math.ceil((state.boostEndsAt - now)/1000));
+      boostTimer.textContent = remaining ? (remaining+'s') : '—';
+      if(!remaining){ state.ppcMult = 1; state.boostEndsAt = 0; }
+    }
+
+    checkGoal(); updateHUD(); refreshAffordability();
     requestAnimationFrame(tick);
   }
 
-  /* ---------- BOOT ---------- */
-  initContent();
-  recomputePPS();
-  renderUpgrades();
-  renderProducers();
-  updateHUD();
-  moveTarget();
+  /* -------- Boot -------- */
+  load(); initContent(); recomputePPS();
+  renderUpgrades(); renderProducers(); updateHUD(); moveTarget();
+  if(STORAGE_OK){ setInterval(save,15000); window.addEventListener('beforeunload', save); document.addEventListener('visibilitychange', ()=>{ if(document.hidden) save(); }); }
   requestAnimationFrame(tick);
 });
 </script>
