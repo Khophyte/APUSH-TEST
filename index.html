@@ -175,7 +175,7 @@
     </div>
     <div class="modal-body small">
       <ul>
-        <li>Click <em>Quiz Boost</em> to get a random multiple‑choice question from APUSH Unit 5 (1844–1877).</li>
+        <li>Click <em>Quiz Boost</em> to get a random multiple-choice question from APUSH Unit 5 (1844–1877).</li>
         <li>If you answer correctly, choose one: <strong>2× PPC for 60s</strong> or a <strong>free upgrade</strong> (cheapest available).</li>
         <li>Wrong answers have no penalty. You can try again any time.</li>
         <li>Boosts don’t stack; starting a new one replaces the old timer.</li>
@@ -184,11 +184,11 @@
   </dialog>
 
 <script>
-(function(){
+window.addEventListener('DOMContentLoaded', () => {
   const $ = sel => document.querySelector(sel);
   const $$ = sel => document.querySelectorAll(sel);
 
-  // Robust storage detection (about:blank/data/blob origins block localStorage)
+  // Robust storage detection (about:blank/data/blob origins may block localStorage)
   function storageAvailable(){
     try{
       const t='__apush5__';
@@ -221,7 +221,7 @@
   const PRODUCER_DATA = [
     { id:'pamphleteers', name:'Abolitionist Pamphleteers', basePps: 0.05, baseCost: 200 },
     { id:'republican-clubs', name:'Republican Clubs', basePps: 0.2, baseCost: 1500 },
-    { id:'freedmens-bureau', name:"Freedmen's Bureau", basePps: 0.8, baseCost: 8000 },
+    { id:"freedmens-bureau", name:"Freedmen's Bureau", basePps: 0.8, baseCost: 8000 },
     { id:'rr-tycoons', name:'Railroad Tycoons', basePps: 3.2, baseCost: 40000 },
   ];
 
@@ -229,7 +229,7 @@
   const price = (base, n) => Math.floor(base * Math.pow(1.55, n));
 
   // --- Quiz Bank (APUSH Unit 5: 1844–1877) ---
-  // Each: {q, choices[], answerIdx}
+  // Each: {q, c[], a}
   const QUIZ = [
     {q:'What concept justified U.S. expansion to the Pacific?', c:['Containment','Manifest Destiny','Isolationism','Popular Sovereignty'], a:1},
     {q:'Which war was sparked in part by the annexation of Texas?', c:['Spanish-American War','War of 1812','Mexican–American War','Civil War'], a:2},
@@ -261,7 +261,7 @@
 
   // --- Persistence ---
   const save = () => {
-    if(!STORAGE_OK) return; // skip on about:blank/data/blob origins
+    if(!STORAGE_OK) return;
     try{
       const payload = {
         points: state.points,
@@ -278,7 +278,8 @@
       };
       localStorage.setItem('apush5-save', JSON.stringify(payload));
     }catch(e){ console.warn('save failed', e); }
-  }
+  };
+
   const load = () => {
     if(!STORAGE_OK) return;
     const raw = localStorage.getItem('apush5-save');
@@ -286,8 +287,10 @@
     try{
       const d = JSON.parse(raw);
       Object.assign(state, d);
-  }catch(e){ console.warn('save load failed', e); }
-  }
+    }catch(e){
+      console.warn('save load failed', e);
+    }
+  };
 
   // --- Setup ---
   const moneyEl = $('#currency');
@@ -329,8 +332,6 @@
   }
 
   function updateHUD(){
-    // hard guards to avoid null errors
-    if(!moneyEl||!ppcEl||!ppsEl||!multEl||!prestigeEl||!progressBar||!nextGoalEl) return;
     const ppc = state.basePpc * state.ppcMult;
     moneyEl.textContent = fmt(state.points);
     ppcEl.textContent = fmt(ppc);
@@ -339,7 +340,9 @@
     prestigeEl.textContent = `${state.prestige} (×${state.prestige+1})`;
     const prog = Math.max(0, Math.min(1, state.points / state.goal));
     progressBar.style.width = (prog*100).toFixed(1)+'%';
-    nextGoalEl.textContent = state.endless ? 'Endless mode unlocked! Keep going. Prestige for +1× permanent boost.' : `Goal: Reach ${fmt(state.goal)} Points`;
+    nextGoalEl.textContent = state.endless
+      ? 'Endless mode unlocked! Keep going. Prestige for +1× permanent boost.'
+      : `Goal: Reach ${fmt(state.goal)} Points`;
   }
 
   // Render upgrade cards
@@ -510,7 +513,7 @@
   }
 
   function grantFreeUpgrade(){
-    // find the cheapest affordable upgrade (by current cost), even if currently unaffordable
+    // find the cheapest upgrade by current cost
     const withCost = state.upgrades.map(u=>({u, cost: price(u.baseCost, u.level)}));
     withCost.sort((a,b)=> a.cost - b.cost);
     const chosen = withCost[0].u;
@@ -548,14 +551,28 @@
   }
   prestigeBtn.addEventListener('click', doPrestige);
 
-  
+  // About modal close (button inside)
   $$('[data-close-about]').forEach(b=> b.addEventListener('click', ()=> aboutModal.close()));
 
-  $('#saveBtn').addEventListener('click', ()=>{ save(); const t=document.createElement('span'); t.textContent=' Saved! '; t.className='pill'; t.style.marginLeft='8px'; t.style.opacity='0.9'; $('#saveBtn').after(t); setTimeout(()=>t.remove(),1200); });
-  if(!STORAGE_OK && saveBtn){ saveBtn.disabled = true; saveBtn.title = 'Saving disabled on this page (about:blank/data/blob origins). Open this file via https:// or file://'; }
+  // Save/Reset
+  saveBtn.addEventListener('click', ()=>{
+    save();
+    const t = document.createElement('span');
+    t.textContent = ' Saved! ';
+    t.className = 'pill';
+    t.style.marginLeft = '8px';
+    t.style.opacity = '0.9';
+    saveBtn.after(t);
+    setTimeout(()=>t.remove(),1200);
+  });
+  if(!STORAGE_OK){
+    saveBtn.disabled = true;
+    saveBtn.title = 'Saving disabled on this origin.';
+  }
   $('#resetBtn').addEventListener('click', ()=>{
     if(confirm('Hard reset your progress?')){
-      localStorage.removeItem('apush5-save'); location.reload();
+      localStorage.removeItem('apush5-save');
+      location.reload();
     }
   });
 
@@ -575,10 +592,7 @@
   }
 
   requestAnimationFrame(tick);
-
-  // --- Lightweight Diagnostics / Tests ---
-
-})();
+});
 </script>
 </body>
 </html>
