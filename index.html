@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>APUSH Unit 5 Clicker</title>
+  <style>
+    :root{
+      --bg:#0b1220; /* deep navy */
+      --card:#111a2e;
+      --muted:#a9b5d9;
+      --text:#eef1fb;
+      --accent:#7aa2ff;
+      --accent-2:#66e3c4;
+      --danger:#ff7a7a;
+      --gold:#ffd166;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background: radial-gradient(1000px 600px at 15% 10%, #0f1830 0%, var(--bg) 50%),
+                          radial-gradient(800px 500px at 85% 20%, #0c1a33 0%, var(--bg) 50%);
+      color:var(--text); font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    .wrap{max-width:1100px; margin:0 auto; padding:24px}
+    header{display:flex; gap:16px; align-items:center; justify-content:space-between; margin-bottom:16px}
+    h1{font-size:28px; margin:0; letter-spacing:.4px}
+    .subtitle{color:var(--muted); font-size:13px}
+
+    .grid{display:grid; grid-template-columns: 1.4fr .9fr .7fr; gap:16px}
+    @media (max-width: 920px){ .grid{grid-template-columns: 1fr} }
+
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.0)); border:1px solid rgba(255,255,255,.06); border-radius:var(--radius); box-shadow:var(--shadow)}
+    .card .head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.06)}
+    .card .body{padding:16px}
+
+    .big-btn{
+      width:100%; aspect-ratio:1/1; border:none; border-radius:24px; background:
+        radial-gradient(200px 200px at 30% 25%, rgba(255,255,255,.12), rgba(255,255,255,0) 60%),
+        linear-gradient(180deg, #1a2a53, #121d3a);
+      color:#fff; font-weight:800; font-size:22px; letter-spacing:.3px; cursor:pointer; box-shadow:0 20px 60px rgba(0,0,0,.5), inset 0 0 0 2px rgba(255,255,255,.06);
+      transition: transform .06s ease, filter .2s ease;
+    }
+    .big-btn:hover{filter:brightness(1.05)}
+    .big-btn:active{transform: translateY(2px) scale(.995)}
+
+    .row{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px; border:1px solid rgba(255,255,255,.1); padding:8px 10px; border-radius:999px; background:rgba(255,255,255,.03);
+      font-size:13px; color:var(--muted)
+    }
+    .pill strong{color:var(--text)}
+
+    .btn{appearance:none; border:none; border-radius:12px; padding:10px 12px; font-weight:700; cursor:pointer; background:#1a274b; color:#fff; transition:filter .15s ease, transform .06s ease}
+    .btn:hover{filter:brightness(1.06)}
+    .btn:active{transform:translateY(1px)}
+    .btn.gold{background: linear-gradient(180deg, #f7d36f, #d8aa39); color:#281a00}
+    .btn.accent{background: linear-gradient(180deg, #7aa2ff, #4f7ef0); color:#0c1330}
+    .btn.alt{background: linear-gradient(180deg, #66e3c4, #35c2a2); color:#06241b}
+    .btn.danger{background: linear-gradient(180deg, #ff8c8c, #e45c5c)}
+
+    .list{display:flex; flex-direction:column; gap:10px}
+    .item{display:flex; gap:12px; align-items:center; justify-content:space-between; padding:12px; border-radius:14px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06)}
+    .item .meta{display:flex; flex-direction:column; gap:2px}
+    .item .title{font-weight:700}
+    .item .note{font-size:12px; color:var(--muted)}
+
+    .meter{height:10px; width:100%; background:rgba(255,255,255,.06); border-radius:999px; overflow:hidden}
+    .meter > div{height:100%; width:0%; background: linear-gradient(90deg, var(--accent), var(--accent-2));}
+
+    .muted{color:var(--muted)}
+    .money{font-size:24px; font-weight:900; letter-spacing:.2px}
+
+    /* Modal */
+    dialog{border:none; padding:0; border-radius:18px; width:min(560px, 92%); background:var(--card); color:var(--text); box-shadow:var(--shadow)}
+    dialog::backdrop{background:rgba(5,10,20,.6)}
+    .modal-head{padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.06); display:flex; justify-content:space-between; align-items:center}
+    .modal-body{padding:16px}
+    .choices{display:grid; gap:10px; margin-top:10px}
+    .choice{display:flex; gap:10px; align-items:center; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); padding:10px 12px; border-radius:12px; cursor:pointer; color: var(--text);}
+    .choice.correct{outline:2px solid var(--accent-2)}
+    .choice.wrong{outline:2px solid var(--danger)}
+
+    .footer{margin-top:12px; display:flex; gap:10px; justify-content:flex-end}
+    .small{font-size:12px}
+    a.link{color:var(--accent)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>APUSH Unit 5 Clicker</h1>
+        <div class="subtitle">Slow-burn incremental game • Earn <strong>Points</strong> by clicking, buy upgrades, and snag short boosts by answering Unit 5 questions (1844–1877).</div>
+      </div>
+      <div class="row">
+        <button id="saveBtn" class="btn alt" title="Save now">💾 Save</button>
+        <button id="prestigeBtn" class="btn gold" title="Reset for permanent +1× currency">🌀 Prestige</button>
+        <button id="resetBtn" class="btn danger" title="Hard reset">♻️ Reset</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Clicker Column -->
+      <section class="card" aria-labelledby="clickerLabel">
+        <div class="head"><div class="row">
+          <div>
+            <div id="currency" class="money" aria-live="polite">0</div>
+            <div class="subtitle">Points</div>
+          </div>
+          <div class="pill" title="Points per click"><span>🖱️ PPC:</span><strong id="ppc">1</strong></div>
+          <div class="pill" title="Passive points per second"><span>⏱️ PPS:</span><strong id="pps">0</strong></div>
+          <div class="pill" title="Current multiplier"><span>⚡ Mult:</span><strong id="mult">1×</strong></div>
+          <div class="pill" title="Prestige level"><span>✨ Prestige:</span><strong id="prestige">0 (×1)</strong></div>
+        </div></div>
+        <div class="body">
+          <button id="clickBtn" class="big-btn" aria-labelledby="clickerLabel">Click for Points</button>
+          <p id="clickerLabel" class="muted" style="margin-top:12px">Base PPC grows with upgrades. Progression is intentionally <em>slow</em>—use quiz boosts wisely.</p>
+
+          <div class="row" style="margin-top:12px">
+            <button id="boostBtn" class="btn gold" title="Answer a Unit 5 question for a reward">🎁 Quiz Boost</button>
+            <span id="boostTimer" class="pill" aria-live="polite" title="Boost time remaining">⏳ Boost: <strong>—</strong></span>
+          </div>
+
+          <div style="margin-top:14px">
+            <div class="meter" aria-hidden="true"><div id="progressBar"></div></div>
+            <div class="small muted" id="nextGoal">Goal: Reach 100,000,000 Points</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Upgrades -->
+      <section class="card">
+        <div class="head"><strong>Upgrades</strong><span class="small muted">Costs rise steeply</span></div>
+        <div class="body">
+          <div id="upgradeList" class="list"></div>
+        </div>
+      </section>
+
+      <!-- Producers -->
+      <section class="card">
+        <div class="head"><strong>Producers</strong><span class="small muted">Slow passive income</span></div>
+        <div class="body">
+          <div id="producerList" class="list"></div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="small muted" style="margin-top:18px"></footer>
+  </div>
+
+  <!-- Modal: Quiz Boost -->
+  <dialog id="quizModal" aria-labelledby="quizTitle" aria-describedby="quizDesc">
+    <div class="modal-head">
+      <strong id="quizTitle">Answer a Unit 5 question</strong>
+      <button id="closeQuiz" class="btn">✖</button>
+    </div>
+    <div class="modal-body">
+      <div id="quizDesc" class="muted small">Get the answer right to pick a reward. Wrong answers give nothing—no penalty.</div>
+      <h3 id="qText" style="margin:.6em 0 .4em"></h3>
+      <div id="qChoices" class="choices" role="list"></div>
+      <div class="footer">
+        <button id="rerollBtn" class="btn alt" title="New question">🔁 New Question</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Modal: About -->
+  <dialog id="aboutModal">
+    <div class="modal-head">
+      <strong>Boost Rules</strong>
+      <button class="btn" data-close-about>✖</button>
+    </div>
+    <div class="modal-body small">
+      <ul>
+        <li>Click <em>Quiz Boost</em> to get a random multiple‑choice question from APUSH Unit 5 (1844–1877).</li>
+        <li>If you answer correctly, choose one: <strong>2× PPC for 60s</strong> or a <strong>free upgrade</strong> (cheapest available).</li>
+        <li>Wrong answers have no penalty. You can try again any time.</li>
+        <li>Boosts don’t stack; starting a new one replaces the old timer.</li>
+      </ul>
+    </div>
+  </dialog>
+
+<script>
+(function(){
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => document.querySelectorAll(sel);
+
+  // Robust storage detection (about:blank/data/blob origins block localStorage)
+  function storageAvailable(){
+    try{
+      const t='__apush5__';
+      localStorage.setItem(t,'1');
+      localStorage.removeItem(t);
+      return true;
+    }catch(e){ return false; }
+  }
+  const STORAGE_OK = storageAvailable();
+
+  // --- Game State ---
+  const state = {
+    points: 0,
+    basePpc: 1,
+    ppcMult: 1,
+    pps: 0,
+    boostEndsAt: 0,
+    upgrades: [],
+    producers: [],
+    lastTick: Date.now(),
+    goal: 100000000,
+    prestige: 0,
+    endless: false,
+  };
+
+  // --- Content: Upgrades & Producers (steep, slow progression) ---
+  const UPGRADE_DATA = [
+    { id:'ppc-core', name:'PPC Upgrade', desc:'+1 PPC', ppc:+1, baseCost: 50 },
+  ];
+  const PRODUCER_DATA = [
+    { id:'pamphleteers', name:'Abolitionist Pamphleteers', basePps: 0.05, baseCost: 200 },
+    { id:'republican-clubs', name:'Republican Clubs', basePps: 0.2, baseCost: 1500 },
+    { id:'freedmens-bureau', name:"Freedmen's Bureau", basePps: 0.8, baseCost: 8000 },
+    { id:'rr-tycoons', name:'Railroad Tycoons', basePps: 3.2, baseCost: 40000 },
+  ];
+
+  // Exponential price scaling to keep it slow
+  const price = (base, n) => Math.floor(base * Math.pow(1.55, n));
+
+  // --- Quiz Bank (APUSH Unit 5: 1844–1877) ---
+  // Each: {q, choices[], answerIdx}
+  const QUIZ = [
+    {q:'What concept justified U.S. expansion to the Pacific?', c:['Containment','Manifest Destiny','Isolationism','Popular Sovereignty'], a:1},
+    {q:'Which war was sparked in part by the annexation of Texas?', c:['Spanish-American War','War of 1812','Mexican–American War','Civil War'], a:2},
+    {q:'The Wilmot Proviso sought to...', c:['ban slavery in territory from Mexico','immediately abolish slavery nationwide','extend the Missouri Compromise to the Pacific','protect slavery in D.C.'], a:0},
+    {q:'Popular sovereignty proposed to decide slavery by...', c:['state legislatures','Supreme Court','presidential proclamation','voters in the territory'], a:3},
+    {q:'What 1852 novel galvanized Northern antislavery sentiment?', c:['The Red Badge of Courage','Uncle Tom\'s Cabin','Leaves of Grass','The Scarlet Letter'], a:1},
+    {q:'The Kansas–Nebraska Act (1854) effectively...', c:['repealed the Missouri Compromise line','freed enslaved people in border states','banned slavery in the West','ended the two-party system'], a:0},
+    {q:'Bleeding Kansas refers to...', c:['a Civil War battle','violence over slavery in a territory','a failed slave revolt','labor strikes of 1877'], a:1},
+    {q:'Dred Scott v. Sandford (1857) ruled that...', c:['Congress could ban slavery in territories','enslaved people were citizens','Black people could sue in federal court','Congress lacked power to prohibit slavery in territories'], a:3},
+    {q:'Which event directly prompted Southern secession of 1860–61?', c:['Fugitive Slave Act','Lincoln\'s election','John Brown\'s raid','Sumner caning'], a:1},
+    {q:'The Union war aim after 1863 increasingly included...', c:['immediate surrender','compensated emancipation only','preserving slavery in border states','emancipation'], a:3},
+    {q:'The Emancipation Proclamation applied to...', c:['all enslaved people in the U.S.','confederate-held areas only','border states only','U.S. territories only'], a:1},
+    {q:'Sherman\'s March to the Sea exemplified...', c:['trench warfare','guerrilla warfare','total war','naval blockade'], a:2},
+    {q:'Which amendment abolished slavery?', c:['13th','14th','15th','16th'], a:0},
+    {q:'Which amendment granted birthright citizenship and equal protection?', c:['12th','13th','14th','15th'], a:2},
+    {q:'Which amendment protected voting rights regardless of race?', c:['14th','15th','16th','17th'], a:1},
+    {q:'Black Codes were...', c:['Jim Crow laws of the 1890s','state laws limiting freedpeople\'s rights during Reconstruction','federal military orders','labor union rules'], a:1},
+    {q:'The Freedmen\'s Bureau primarily...', c:['resettled freedpeople to the North','provided aid, schools, and contracts to freedpeople','enforced the Fugitive Slave Act','sold Confederate land to planters'], a:1},
+    {q:'Sharecropping often led to...', c:['land ownership for freedpeople','economic independence','debt peonage','industrial jobs'], a:2},
+    {q:'The Compromise of 1877 resulted in...', c:['renewed Radical Reconstruction','federal troops withdrawn from the South','immediate Black suffrage','annexation of Cuba'], a:1},
+    {q:'What was a key Union advantage?', c:['cotton diplomacy','larger population & industry','superior cavalry','home-field advantage everywhere'], a:1},
+    {q:'Lincoln\'s Ten Percent Plan aimed to...', c:['punish Confederates severely','require majority loyalty oaths','offer lenient readmission for states','delay readmission until 1900'], a:2},
+    {q:'The Anaconda Plan referred to...', c:['a Confederate ironclad','a Union naval blockade strategy','a Western cattle drive','a Reconstruction land policy'], a:1},
+    {q:'Which act offered free western land to settlers?', c:['Homestead Act','Dawes Act','Morrill Act','Pendleton Act'], a:0},
+    {q:'The Battle of Antietam led to...', c:['French recognition of the Confederacy','the Emancipation Proclamation announcement','Union evacuation of D.C.','end of the draft'], a:1},
+    {q:'Copperheads were...', c:['Southern cavalry units','Northern Democrats opposing the war','abolitionist Republicans','enslaved people who escaped'], a:1},
+    {q:'Scalawags were...', c:['Southern-born white Republicans during Reconstruction','Northern carpetbaggers','Union deserters','freedpeople in office'], a:0},
+  ];
+
+  // --- Persistence ---
+  const save = () => {
+    if(!STORAGE_OK) return; // skip on about:blank/data/blob origins
+    try{
+      const payload = {
+        points: state.points,
+        basePpc: state.basePpc,
+        ppcMult: state.ppcMult,
+        pps: state.pps,
+        boostEndsAt: state.boostEndsAt,
+        upgrades: state.upgrades,
+        producers: state.producers,
+        lastTick: Date.now(),
+        goal: state.goal,
+        prestige: state.prestige,
+        endless: state.endless,
+      };
+      localStorage.setItem('apush5-save', JSON.stringify(payload));
+    }catch(e){ console.warn('save failed', e); }
+  }
+  const load = () => {
+    if(!STORAGE_OK) return;
+    const raw = localStorage.getItem('apush5-save');
+    if(!raw) return;
+    try{
+      const d = JSON.parse(raw);
+      Object.assign(state, d);
+    }catch(e){ console.warn('save load failed', e); }
+  }catch(e){ console.warn('save load failed', e); }
+  }
+
+  // --- Setup ---
+  const moneyEl = $('#currency');
+  const ppcEl = $('#ppc');
+  const ppsEl = $('#pps');
+  const multEl = $('#mult');
+  const prestigeEl = $('#prestige');
+  const progressBar = $('#progressBar');
+  const nextGoalEl = $('#nextGoal');
+
+  const clickBtn = $('#clickBtn');
+  const boostBtn = $('#boostBtn');
+  const prestigeBtn = $('#prestigeBtn');
+  const saveBtn = $('#saveBtn');
+  const boostTimer = $('#boostTimer strong');
+
+  const upgradeList = $('#upgradeList');
+  const producerList = $('#producerList');
+
+  const quizModal = $('#quizModal');
+  const aboutModal = $('#aboutModal');
+
+  // Create instances
+  function initContent(){
+    if(!state.upgrades.length){
+      state.upgrades = UPGRADE_DATA.map(u => ({...u, level:0}));
+    }
+    if(!state.producers.length){
+      state.producers = PRODUCER_DATA.map(p => ({...p, level:0}));
+    }
+  }
+
+  // Render helpers
+  function fmt(n){
+    if(n >= 1e9) return (n/1e9).toFixed(2)+'B';
+    if(n >= 1e6) return (n/1e6).toFixed(2)+'M';
+    if(n >= 1e3) return (n/1e3).toFixed(2)+'k';
+    return Math.floor(n).toString();
+  }
+
+  function updateHUD(){
+    // hard guards to avoid null errors
+    if(!moneyEl||!ppcEl||!ppsEl||!multEl||!prestigeEl||!progressBar||!nextGoalEl) return;
+    const ppc = state.basePpc * state.ppcMult;
+    moneyEl.textContent = fmt(state.points);
+    ppcEl.textContent = fmt(ppc);
+    ppsEl.textContent = state.pps.toFixed(2);
+    multEl.textContent = state.ppcMult.toFixed(1)+'×';
+    prestigeEl.textContent = `${state.prestige} (×${state.prestige+1})`;
+    const prog = Math.max(0, Math.min(1, state.points / state.goal));
+    progressBar.style.width = (prog*100).toFixed(1)+'%';
+    nextGoalEl.textContent = state.endless ? 'Endless mode unlocked! Keep going. Prestige for +1× permanent boost.' : `Goal: Reach ${fmt(state.goal)} Points`;
+  }
+
+  // Render upgrade cards
+  function renderUpgrades(){
+    upgradeList.innerHTML = '';
+    state.upgrades.forEach(u => {
+      const n = u.level;
+      const cost = price(u.baseCost, n);
+      const el = document.createElement('div');
+      el.className = 'item';
+      el.innerHTML = `<div class="meta"><div class="title">${u.name}</div><div class="note">${u.desc} • Owned: ${n} • Cost: ${fmt(cost)}</div></div>`;
+      const btn = document.createElement('button');
+      btn.className = 'btn accent';
+      btn.textContent = 'Buy';
+      btn.disabled = state.points < cost;
+      btn.addEventListener('click', ()=>{
+        if(state.points < cost) return;
+        state.points -= cost;
+        u.level++;
+        state.basePpc += u.ppc;
+        updateHUD(); renderUpgrades(); save();
+      });
+      el.appendChild(btn);
+      upgradeList.appendChild(el);
+    });
+  }
+
+  // Render producers
+  function recomputePPS(){
+    state.pps = 0;
+    state.producers.forEach(p => { state.pps += p.basePps * p.level; });
+  }
+  function renderProducers(){
+    producerList.innerHTML = '';
+    state.producers.forEach(p => {
+      const n = p.level;
+      const cost = price(p.baseCost, n);
+      const gain = p.basePps;
+      const el = document.createElement('div');
+      el.className = 'item';
+      el.innerHTML = `<div class="meta"><div class="title">${p.name}</div><div class="note">+${gain.toFixed(2)} PPS each • Owned: ${n} • Cost: ${fmt(cost)}</div></div>`;
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.textContent = 'Hire';
+      btn.disabled = state.points < cost;
+      btn.addEventListener('click', ()=>{
+        if(state.points < cost) return;
+        state.points -= cost;
+        p.level++;
+        recomputePPS();
+        updateHUD(); renderProducers(); save();
+      });
+      el.appendChild(btn);
+      producerList.appendChild(el);
+    });
+  }
+
+  // --- Goal / Endless helpers ---
+  function checkGoal(){
+    if(state.points >= state.goal){
+      if(state.goal >= 100000000){
+        state.endless = true;
+      } else {
+        state.goal = Math.floor(state.goal * 2.7);
+      }
+    }
+  }
+
+  // --- Game Loop ---
+  function tick(){
+    const now = Date.now();
+    const dt = Math.min(1, (now - state.lastTick)/1000); // clamp for tab switches
+    state.lastTick = now;
+    state.points += state.pps * dt * (state.prestige + 1);
+
+    // handle boost timer
+    if(state.boostEndsAt > 0){
+      const remaining = Math.max(0, Math.ceil((state.boostEndsAt - now)/1000));
+      boostTimer.textContent = remaining ? (remaining + 's') : '—';
+      if(!remaining){ state.ppcMult = 1; state.boostEndsAt = 0; }
+    }
+
+    checkGoal();
+    updateHUD();
+    renderAffordability();
+    requestAnimationFrame(tick);
+  }
+
+  function renderAffordability(){
+    // Re-evaluate affordances without rebuilding DOM
+    $$('#upgradeList .item').forEach((el, i)=>{
+      const u = state.upgrades[i];
+      const cost = price(u.baseCost, u.level);
+      const btn = el.querySelector('button');
+      btn.disabled = state.points < cost;
+      el.querySelector('.note').textContent = `${u.desc} • Owned: ${u.level} • Cost: ${fmt(cost)}`;
+    });
+    $$('#producerList .item').forEach((el, i)=>{
+      const p = state.producers[i];
+      const cost = price(p.baseCost, p.level);
+      const btn = el.querySelector('button');
+      btn.disabled = state.points < cost;
+      el.querySelector('.note').textContent = `+${p.basePps.toFixed(2)} PPS each • Owned: ${p.level} • Cost: ${fmt(cost)}`;
+    });
+  }
+
+  // --- Interactions ---
+  clickBtn.addEventListener('click', () => {
+    const gain = state.basePpc * state.ppcMult * (state.prestige + 1);
+    state.points += gain;
+    checkGoal();
+    updateHUD(); renderAffordability();
+  });
+
+  // Boost flow: answer question → choose reward
+  let currentQ = null;
+  function pickQuestion(){
+    currentQ = QUIZ[Math.floor(Math.random()*QUIZ.length)];
+    renderQuestion();
+  }
+  function renderQuestion(){
+    $('#qText').textContent = currentQ.q;
+    const box = $('#qChoices');
+    box.innerHTML = '';
+    currentQ.c.forEach((text, idx)=>{
+      const div = document.createElement('button');
+      div.type='button';
+      div.className = 'choice';
+      div.innerHTML = `<span class="pill">${String.fromCharCode(65+idx)}</span> <span>${text}</span>`;
+      div.addEventListener('click', ()=> handleAnswer(idx, div));
+      box.appendChild(div);
+    });
+  }
+
+  function handleAnswer(idx, el){
+    const correct = idx === currentQ.a;
+    if(correct){
+      el.classList.add('correct');
+      // Offer reward choice
+      const chooser = document.createElement('div');
+      chooser.style.marginTop = '12px';
+      chooser.innerHTML = `<div class="small">Nice! Pick your reward:</div>`;
+      const row = document.createElement('div'); row.className='row'; row.style.marginTop='8px';
+      const r1 = document.createElement('button'); r1.className='btn gold'; r1.textContent = '2× PPC for 60s';
+      const r2 = document.createElement('button'); r2.className='btn accent'; r2.textContent = 'Free cheapest upgrade';
+      r1.addEventListener('click', ()=>{ startBoost(60); quizModal.close(); });
+      r2.addEventListener('click', ()=>{ grantFreeUpgrade(); quizModal.close(); });
+      row.appendChild(r1); row.appendChild(r2); chooser.appendChild(row);
+      $('#qChoices').appendChild(chooser);
+      // prevent multiple rewards
+      $$('#qChoices .choice').forEach(b=> b.disabled=true);
+    }else{
+      el.classList.add('wrong');
+      // lock out this question
+      $$('#qChoices .choice').forEach(b=> b.disabled=true);
+      const msg = document.createElement('div');
+      msg.className='small muted'; msg.style.marginTop='8px';
+      msg.textContent = 'Not quite. Try another question or close.';
+      $('#qChoices').appendChild(msg);
+    }
+  }
+
+  function startBoost(seconds){
+    state.ppcMult = 2;
+    state.boostEndsAt = Date.now() + seconds*1000;
+    boostTimer.textContent = seconds+'s';
+    updateHUD();
+  }
+
+  function grantFreeUpgrade(){
+    // find the cheapest affordable upgrade (by current cost), even if currently unaffordable
+    const withCost = state.upgrades.map(u=>({u, cost: price(u.baseCost, u.level)}));
+    withCost.sort((a,b)=> a.cost - b.cost);
+    const chosen = withCost[0].u;
+    chosen.level++;
+    state.basePpc += chosen.ppc;
+    renderUpgrades(); updateHUD(); save();
+  }
+
+  // Buttons
+  boostBtn.addEventListener('click', ()=>{ pickQuestion(); quizModal.showModal(); });
+  $('#closeQuiz').addEventListener('click', ()=> quizModal.close());
+  $('#rerollBtn').addEventListener('click', pickQuestion);
+
+  // Prestige system
+  function canPrestige(){ return state.points >= 100000000 || state.endless; }
+  function doPrestige(){
+    if(!canPrestige()) return;
+    if(!confirm('Prestige? Reset progress for a permanent +1× currency multiplier.')) return;
+    state.prestige = (state.prestige||0) + 1;
+    // hard reset progress
+    state.points = 0;
+    state.basePpc = 1;
+    state.ppcMult = 1;
+    state.pps = 0;
+    state.boostEndsAt = 0;
+    state.endless = false;
+    state.goal = 100000000;
+    state.upgrades.forEach(u=> u.level = 0);
+    state.producers.forEach(p=> p.level = 0);
+    recomputePPS();
+    renderUpgrades();
+    renderProducers();
+    updateHUD();
+    save();
+  }
+  prestigeBtn.addEventListener('click', doPrestige);
+
+  
+  $$('[data-close-about]').forEach(b=> b.addEventListener('click', ()=> aboutModal.close()));
+
+  $('#saveBtn').addEventListener('click', ()=>{ save(); const t=$('<span/>'); t.textContent=' Saved! '; t.className='pill'; t.style.marginLeft='8px'; t.style.opacity='0.9'; $('#saveBtn').after(t); setTimeout(()=>t.remove(),1200); });
+  if(!STORAGE_OK && saveBtn){ saveBtn.disabled = true; saveBtn.title = 'Saving disabled on this page (about:blank/data/blob origins). Open this file via https:// or file://'; } const t=$('<span/>'); t.textContent=' Saved! '; t.className='pill'; t.style.marginLeft='8px'; t.style.opacity='0.9'; $('#saveBtn').after(t); setTimeout(()=>t.remove(),1200); });
+  $('#resetBtn').addEventListener('click', ()=>{
+    if(confirm('Hard reset your progress?')){
+      localStorage.removeItem('apush5-save'); location.reload();
+    }
+  });
+
+  // --- Boot ---
+  load();
+  initContent();
+  recomputePPS();
+  renderUpgrades();
+  renderProducers();
+  updateHUD();
+
+  // Autosave only when storage is available
+  if(STORAGE_OK){
+    setInterval(save, 15000);
+    window.addEventListener('beforeunload', save);
+    document.addEventListener('visibilitychange', ()=>{ if(document.hidden) save(); });
+  }
+
+  requestAnimationFrame(tick);
+
+  // --- Lightweight Diagnostics / Tests ---
+
+})();
+</script>
+</body>
+</html>
