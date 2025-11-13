@@ -12,9 +12,14 @@
       --target-size:56px; --target-pad:10px; --move-ms:260ms;
     }
     *{box-sizing:border-box} html,body{height:100%}
-    body{margin:0;background:radial-gradient(1000px 600px at 15% 10%, #0f1830 0%, var(--bg) 50%),
-                        radial-gradient(800px 500px at 85% 20%, #0c1a33 0%, var(--bg) 50%);
-         color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,"Helvetica Neue",Arial}
+    body{
+      margin:0;
+      background:
+        radial-gradient(1000px 600px at 15% 10%, #0f1830 0%, var(--bg) 50%),
+        radial-gradient(800px 500px at 85% 20%, #0c1a33 0%, var(--bg) 50%);
+      color:var(--text);
+      font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,"Helvetica Neue",Arial;
+    }
     .wrap{max-width:1100px;margin:0 auto;padding:24px}
     header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px}
     h1{font-size:28px;margin:0}.subtitle{color:var(--muted);font-size:13px}
@@ -22,20 +27,34 @@
     .grid{display:grid;grid-template-columns:1.4fr .9fr .7fr;gap:16px}
     @media (max-width:920px){.grid{grid-template-columns:1fr}}
 
-    .card{background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);
-          border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .card{
+      background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
     .card .head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
     .card .body{padding:16px}
 
     /* Click Area */
-    .click-area{position:relative;width:100%;aspect-ratio:1/1;border-radius:24px;
-      background:radial-gradient(200px 200px at 30% 25%, rgba(255,255,255,.12), transparent 60%),
-                 linear-gradient(180deg,#1a2a53,#121d3a);
+    .click-area{
+      position:relative;
+      width:100%;
+      aspect-ratio:1/1;
+      border-radius:24px;
+      background:
+        radial-gradient(200px 200px at 30% 25%, rgba(255,255,255,.12), transparent 60%),
+        linear-gradient(180deg,#1a2a53,#121d3a);
       box-shadow:0 20px 60px rgba(0,0,0,.5), inset 0 0 0 2px rgba(255,255,255,.06);
-      overflow:hidden}
+      overflow:hidden;
+    }
 
     /* Moving Target */
-    .target{position:absolute;width:var(--target-size);height:var(--target-size);border-radius:50%;
+    .target{
+      position:absolute;
+      width:var(--target-size);
+      height:var(--target-size);
+      border-radius:50%;
       background:
         radial-gradient(140% 140% at 30% 25%,
           rgba(255,255,255,.35) 0%,
@@ -43,41 +62,112 @@
           rgba(255,255,255,.08) 58%,
           rgba(255,255,255,0) 78%),
         linear-gradient(180deg,#7aa2ff,#4f7ef0);
-      background-clip:padding-box;color:#0b1124;display:flex;align-items:center;justify-content:center;font-weight:900;cursor:pointer;user-select:none;
-      transition:left var(--move-ms) cubic-bezier(.2,.8,.2,1), top var(--move-ms) cubic-bezier(.2,.8,.2,1), transform .06s ease, filter .15s ease;
-      box-shadow:0 10px 28px rgba(0,0,0,.45), inset 0 0 0 2px rgba(255,255,255,.22)}
-    .target:hover{filter:brightness(1.08)} .target:active{transform:scale(.97)}
+      background-clip:padding-box;
+      color:#0b1124;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      cursor:pointer;
+      user-select:none;
+      transition:
+        left var(--move-ms) cubic-bezier(.2,.8,.2,1),
+        top var(--move-ms) cubic-bezier(.2,.8,.2,1),
+        transform .06s ease,
+        filter .15s ease;
+      box-shadow:0 10px 28px rgba(0,0,0,.45), inset 0 0 0 2px rgba(255,255,255,.22);
+    }
+    .target:hover{filter:brightness(1.08)}
+    .target:active{transform:scale(.97)}
 
     .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-    .pill{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.1);padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.03);font-size:13px;color:var(--muted)}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      border:1px solid rgba(255,255,255,.1);
+      padding:8px 10px;border-radius:999px;
+      background:rgba(255,255,255,.03);
+      font-size:13px;color:var(--muted)
+    }
     .pill strong{color:var(--text)}
-    .btn{border:none;border-radius:12px;padding:10px 12px;font-weight:700;cursor:pointer;transition:filter .15s, transform .06s}
-    .btn:hover{filter:brightness(1.08)} .btn:active{transform:translateY(1px)}
+    .btn{
+      border:none;border-radius:12px;
+      padding:10px 12px;
+      font-weight:700;
+      cursor:pointer;
+      transition:filter .15s, transform .06s;
+    }
+    .btn:hover{filter:brightness(1.08)}
+    .btn:active{transform:translateY(1px)}
     .btn.gold{background:linear-gradient(180deg,#f7d36f,#d8aa39);color:#281a00}
     .btn.accent{background:linear-gradient(180deg,#7aa2ff,#4f7ef0);color:#0c1330}
     .btn.alt{background:linear-gradient(180deg,#66e3c4,#35c2a2);color:#06241b}
+    .btn.small-btn{padding:6px 8px;font-size:11px;border-radius:999px}
 
     .list{display:flex;flex-direction:column;gap:10px}
-    .item{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
-    .item .meta{display:flex;flex-direction:column;gap:2px}.item .title{font-weight:700}.item .note{font-size:12px;color:var(--muted)}
-
-    .meter{height:10px;width:100%;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden}
-    .meter>div{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
     .money{font-size:24px;font-weight:900}
     .small{font-size:12px;color:var(--muted)}
 
-    dialog{border:none;border-radius:18px;width:min(560px,92%);background:var(--card);color:var(--text);box-shadow:var(--shadow)}
+    .meter{height:10px;width:100%;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden}
+    .meter>div{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+
+    dialog{border:none;border-radius:18px;width:min(620px,92%);background:var(--card);color:var(--text);box-shadow:var(--shadow)}
     dialog::backdrop{background:rgba(5,10,20,.6)}
     .modal-head{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center}
     .modal-body{padding:16px}
 
     .choices{display:grid;gap:10px;margin-top:10px}
-    .choice{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);
-      padding:10px 12px;border-radius:12px;cursor:pointer;color:var(--text);
-      transition:background .15s,border-color .15s,transform .05s}
+    .choice{
+      display:flex;align-items:center;gap:10px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.18);
+      padding:10px 12px;border-radius:12px;
+      cursor:pointer;color:var(--text);
+      transition:background .15s,border-color .15s,transform .05s;
+    }
     .choice:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.28);transform:translateY(-1px)}
     .choice.correct{border-color:var(--accent-2);background:rgba(102,227,196,.15)}
     .choice.wrong{border-color:var(--danger);background:rgba(255,122,122,.12)}
+
+    /* Producer skill tree */
+    .producer-tier{
+      margin-bottom:16px;
+      padding:12px;
+      border-radius:14px;
+      background:rgba(255,255,255,.02);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .producer-tier-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:8px;
+    }
+    .producer-tier-header .title{font-size:13px;font-weight:600}
+    .producer-tier-header .status{font-size:11px}
+    .producer-tier-header .status.unlocked{color:#a5f3fc}
+    .producer-tier-header .status.locked{color:#fca5a5}
+    .node-grid{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:flex-start;
+      justify-content:center;
+    }
+    .node{
+      min-width:120px;
+      max-width:150px;
+      text-align:center;
+      padding:8px;
+      border-radius:16px;
+      background:rgba(15,23,42,0.9);
+      border:1px solid rgba(148,163,184,0.35);
+    }
+    .node-hub{
+      border-style:dashed;
+      background:rgba(15,23,42,0.7);
+    }
+    .node-title{font-size:13px;margin-bottom:4px}
+    .node-note{font-size:11px;color:var(--muted);margin-bottom:6px;min-height:30px}
   </style>
 </head>
 <body>
@@ -94,6 +184,7 @@
   </header>
 
   <div class="grid">
+    <!-- Clicker -->
     <section class="card">
       <div class="head">
         <div class="row">
@@ -104,7 +195,7 @@
           <div class="pill"><span>🖱️ $/Click:</span><strong id="ppc">1</strong></div>
           <div class="pill"><span>⏱️ $/s:</span><strong id="pps">0</strong></div>
           <div class="pill"><span>⚡ Mult:</span><strong id="mult">1×</strong></div>
-          <div class="pill"><span>✨ Prestige:</span><strong id="prestige">0 (×1)</strong></div>
+          <div class="pill"><span>✨ Prestige:</span><strong id="prestige">0 pts (×1)</strong></div>
         </div>
       </div>
       <div class="body">
@@ -123,11 +214,29 @@
       </div>
     </section>
 
-    <section class="card"><div class="head"><strong>Upgrades</strong></div><div class="body"><div id="upgradeList" class="list"></div></div></section>
-    <section class="card"><div class="head"><strong>Producers</strong></div><div class="body"><div id="producerList" class="list"></div></div></section>
+    <!-- Upgrades -->
+    <section class="card">
+      <div class="head"><strong>Upgrades</strong></div>
+      <div class="body">
+        <div id="upgradeList" class="list"></div>
+      </div>
+    </section>
+
+    <!-- Producers summary / open tree -->
+    <section class="card">
+      <div class="head"><strong>Producers</strong></div>
+      <div class="body">
+        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div class="small">Passive income: <span id="producerPps">$0.00</span> /s</div>
+          <button id="openProducerTree" class="btn">Open Producer Tree</button>
+        </div>
+        <div class="small">Unlock tiers with prestige points, then buy producers inside the skill tree.</div>
+      </div>
+    </section>
   </div>
 </div>
 
+<!-- Quiz Modal -->
 <dialog id="quizModal" aria-labelledby="quizTitle" aria-describedby="quizDesc">
   <div class="modal-head">
     <strong id="quizTitle">Answer a Unit 5 question</strong>
@@ -143,42 +252,104 @@
   </div>
 </dialog>
 
+<!-- Producer Skill Tree Modal -->
+<dialog id="producerModal" aria-labelledby="producerTitle" aria-describedby="producerDesc">
+  <div class="modal-head">
+    <strong id="producerTitle">Producer Skill Tree</strong>
+    <button id="closeProducerModal" class="btn">✖</button>
+  </div>
+  <div class="modal-body">
+    <div id="producerDesc" class="small" style="margin-bottom:8px;">
+      Spend prestige points to unlock new tiers. Each tier contains producers that add passive income (PPS).
+    </div>
+    <div id="producerTree"></div>
+  </div>
+</dialog>
+
 <script>
 window.addEventListener('DOMContentLoaded', () => {
-  const $ = s => document.querySelector(s);
+  const $  = s => document.querySelector(s);
   const $$ = s => document.querySelectorAll(s);
 
-  /* -------- Storage detection -------- */
-  const STORAGE_OK = (()=>{ try{ const t='__apush5__'; localStorage.setItem(t,'1'); localStorage.removeItem(t); return true; }catch(_){ return false; } })();
+  /* ---------- Storage detection ---------- */
+  const STORAGE_OK = (() => {
+    try{
+      const t='__apush5__';
+      localStorage.setItem(t,'1');
+      localStorage.removeItem(t);
+      return true;
+    }catch(_){ return false; }
+  })();
 
-  /* -------- State -------- */
-  const BASE_TARGET_SIZE = 56; // px
+  const BASE_TARGET_SIZE = 56;
+  const SAVE_KEY = 'apush5-save-v4';
+  const SCHEMA   = 4;
+
+  /* ---------- State ---------- */
   const state = {
-    points: 0, basePpc: 1, ppcMult: 1, pps: 0,
-    goal: 100000000, prestige: 0, endless: false,
-    upgrades: [], producers: [],
-    boostEndsAt: 0, lastTick: performance.now()
+    points: 0,
+    basePpc: 1,
+    ppcMult: 1,
+    pps: 0,
+    goal: 100000000,
+    endless: false,
+
+    prestigePoints: 0,   // unspent prestige → multiplier = 1 + prestigePoints
+    totalPrestige: 0,    // total times prestiged (cosmetic / future use)
+
+    upgrades: [],
+    producerLevels: {},  // producerId -> level
+    unlockedTiers: {},   // tierId -> bool
+
+    boostEndsAt: 0,
+    lastTick: performance.now(),
+    schemaVersion: SCHEMA
   };
 
-  /* -------- Pricing helpers -------- */
   const pow = Math.pow;
   function ppcCost(level){
     const base = 50;
     if(level <= 3) return Math.floor(base * pow(1.55, level));
-    if(level === 4){ const prev = Math.floor(base * pow(1.55, 3)); return prev * 4; }
+    if(level === 4){
+      const prev = Math.floor(base * pow(1.55, 3));
+      return prev * 4;
+    }
     return Infinity;
   }
   function sizeCost(level){ const base = 350; return Math.floor(base * pow(2.1, level)); }
   function priceProducer(base, n){ return Math.floor(base * Math.pow(1.55, n)); }
 
-  /* -------- Catalogs -------- */
+  /* ---------- Catalogs ---------- */
   const UPGRADE_DATA = [
-    { id:'ppc',  name:'PPC Upgrade',   desc:'+1 $/Click (final jumps to $10)', type:'ppc',  max:5,  costFn: ppcCost },
-    { id:'size', name:'Target Size',   desc:'+10% button size',                type:'size', max:10, costFn: sizeCost }
+    { id:'ppc',  name:'PPC Upgrade', desc:'+1 $/Click (final jumps to $10)', type:'ppc',  max:5,  costFn: ppcCost },
+    { id:'size', name:'Target Size', desc:'+10% button size',                type:'size', max:10, costFn: sizeCost }
   ];
-  const PRODUCER_DATA = [
-    { id:'pamphleteers',   name:'Abolitionist Pamphleteers', basePps:0.05, baseCost:200 },
-    { id:'republican-clubs', name:'Republican Clubs',        basePps:0.2,  baseCost:1500 }
+
+  // Market Revolution themed tiers
+  const PRODUCER_TIERS = [
+    {
+      id: 'tier1',
+      name: 'Tier I – Cottage & Artisan',
+      unlockCost: 0, // prestige points
+      producers: [
+        { id:'hand-loom',   name:'Hand Loom Workers',   basePps:0.05, baseCost:200  },
+        { id:'blacksmiths', name:'Blacksmith Shops',    basePps:0.15, baseCost:600  },
+        { id:'cobblers',    name:'Cobblers',           basePps:0.10, baseCost:400  },
+        { id:'print-shops', name:'Small Print Shops',   basePps:0.20, baseCost:900  },
+      ]
+    },
+    {
+      id: 'tier2',
+      name: 'Tier II – Transport & Credit',
+      unlockCost: 1, // prestige points to unlock this tier
+      producers: [
+        { id:'canal-tolls',  name:'Canal Toll Investors',      basePps:0.60, baseCost:4500  },
+        { id:'steamboats',   name:'Steamboat Freight Lines',   basePps:1.20, baseCost:9000  },
+        { id:'local-banks',  name:'Local Bank Dividends',      basePps:2.50, baseCost:18000 },
+        { id:'rr-investors', name:'Railroad Investors',        basePps:4.00, baseCost:30000 },
+      ]
+    }
+    // You can add Tier III later with unlockCost: 2, etc.
   ];
 
   const QUIZ = [
@@ -189,20 +360,17 @@ window.addEventListener('DOMContentLoaded', () => {
     {q:'The Compromise of 1877 resulted in...', c:['renewed Radical Reconstruction','federal troops withdrawn from the South','immediate Black suffrage','annexation of Cuba'], a:1},
   ];
 
-  /* -------- Persistence -------- */
-  const SAVE_KEY = 'apush5-save-v2';
-  const SCHEMA = 2;
-
+  /* ---------- Persistence ---------- */
   function save(){
     if(!STORAGE_OK) return;
     try{
-      const payload = { ...state, schemaVersion: SCHEMA };
-      localStorage.setItem(SAVE_KEY, JSON.stringify(payload));
+      localStorage.setItem(SAVE_KEY, JSON.stringify(state));
     }catch(e){ console.warn('save failed', e); }
   }
   function load(){
     if(!STORAGE_OK) return;
-    const raw = localStorage.getItem(SAVE_KEY); if(!raw) return;
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return;
     try{
       const data = JSON.parse(raw);
       Object.assign(state, data);
@@ -214,63 +382,104 @@ window.addEventListener('DOMContentLoaded', () => {
     }catch(e){ console.warn('load failed', e); }
   }
 
-  /* -------- Migration (adds new upgrades/producers to old saves) -------- */
+  function ensureStructures(){
+    if(!Array.isArray(state.upgrades)) state.upgrades = [];
+    if(!state.producerLevels || typeof state.producerLevels !== 'object') state.producerLevels = {};
+    if(!state.unlockedTiers || typeof state.unlockedTiers !== 'object') state.unlockedTiers = {};
+  }
+
   function migrate(){
-    const byId = Object.fromEntries((state.upgrades||[]).map(u=>[u.id,u]));
-    state.upgrades = UPGRADE_DATA.map(def => byId[def.id] ? {...def, ...byId[def.id]} : {...def, level:0});
-
-    const pById = Object.fromEntries((state.producers||[]).map(p=>[p.id,p]));
-    state.producers = PRODUCER_DATA.map(def => pById[def.id] ? {...def, ...pById[def.id]} : {...def, level:0});
-
+    ensureStructures();
+    // Ensure at least tier1 unlocked
+    if(state.unlockedTiers['tier1'] === undefined){
+      state.unlockedTiers['tier1'] = true;
+    }
     applyTargetSizeFromLevel();
+    recomputePPS();
   }
 
-  /* -------- DOM -------- */
-  const moneyEl=$('#currency'), ppcEl=$('#ppc'), ppsEl=$('#pps'), multEl=$('#mult'), prestigeEl=$('#prestige');
-  const progressBar=$('#progressBar'), nextGoalEl=$('#nextGoal'), boostTimer=$('#boostTimer strong');
-  const upgradeList=$('#upgradeList'), producerList=$('#producerList');
-
-  const clickArea=$('#clickArea'), targetBtn=$('#targetBtn');
-  const boostBtn=$('#boostBtn'), quizModal=$('#quizModal'), closeQuiz=$('#closeQuiz'), rerollBtn=$('#rerollBtn');
-  const qText=$('#qText'), qChoices=$('#qChoices');
-
-  const saveBtn=$('#saveBtn'), prestigeBtn=$('#prestigeBtn');
-
-  /* -------- Init content -------- */
   function initContent(){
-    if(!state.upgrades.length)  state.upgrades  = UPGRADE_DATA.map(u=>({...u, level:0}));
-    if(!state.producers.length) state.producers = PRODUCER_DATA.map(p=>({...p, level:0}));
+    ensureStructures();
+    if(state.upgrades.length === 0){
+      state.upgrades = UPGRADE_DATA.map(u => ({...u, level:0}));
+    }
+    if(state.unlockedTiers['tier1'] === undefined){
+      state.unlockedTiers['tier1'] = true;
+    }
     applyTargetSizeFromLevel();
+    recomputePPS();
   }
 
-  /* -------- HUD -------- */
-  function fmt(n){ if(n>=1e9) return '$'+(n/1e9).toFixed(2)+'B';
-                   if(n>=1e6) return '$'+(n/1e6).toFixed(2)+'M';
-                   if(n>=1e3) return '$'+(n/1e3).toFixed(2)+'k';
-                   return '$'+Math.floor(n); }
+  /* ---------- DOM refs ---------- */
+  const moneyEl     = $('#currency');
+  const ppcEl       = $('#ppc');
+  const ppsEl       = $('#pps');
+  const multEl      = $('#mult');
+  const prestigeEl  = $('#prestige');
+  const progressBar = $('#progressBar');
+  const nextGoalEl  = $('#nextGoal');
+  const boostTimer  = $('#boostTimer strong');
+
+  const upgradeList     = $('#upgradeList');
+  const producerPpsEl   = $('#producerPps');
+  const openProducerBtn = $('#openProducerTree');
+  const producerModal   = $('#producerModal');
+  const producerTreeEl  = $('#producerTree');
+  const closeProducerModal = $('#closeProducerModal');
+
+  const clickArea = $('#clickArea');
+  const targetBtn = $('#targetBtn');
+
+  const quizModal = $('#quizModal');
+  const boostBtn  = $('#boostBtn');
+  const closeQuiz = $('#closeQuiz');
+  const rerollBtn = $('#rerollBtn');
+  const qText     = $('#qText');
+  const qChoices  = $('#qChoices');
+
+  const prestigeBtn = $('#prestigeBtn');
+  const saveBtn     = $('#saveBtn');
+
+  /* ---------- HUD / formatting ---------- */
+  function fmt(n){
+    if(n>=1e9) return '$'+(n/1e9).toFixed(2)+'B';
+    if(n>=1e6) return '$'+(n/1e6).toFixed(2)+'M';
+    if(n>=1e3) return '$'+(n/1e3).toFixed(2)+'k';
+    return '$'+Math.floor(n);
+  }
 
   function updateHUD(){
+    const multFromPrestige = 1 + (state.prestigePoints || 0);
+
     moneyEl.textContent = fmt(state.points);
     ppcEl.textContent   = fmt(state.basePpc * state.ppcMult);
     ppsEl.textContent   = '$' + state.pps.toFixed(2);
-    multEl.textContent  = state.ppcMult.toFixed(1)+'×';
-    prestigeEl.textContent = `${state.prestige} (×${state.prestige+1})`;
+    multEl.textContent  = multFromPrestige.toFixed(1) + '×';
+    prestigeEl.textContent = `${state.prestigePoints} pts (×${multFromPrestige.toFixed(1)})`;
+    producerPpsEl.textContent = '$' + state.pps.toFixed(2);
+
     const prog = Math.max(0, Math.min(1, state.points / state.goal));
-    progressBar.style.width = (prog*100).toFixed(1)+'%';
+    progressBar.style.width = (prog*100).toFixed(1) + '%';
     nextGoalEl.textContent = state.endless
-      ? 'Endless mode unlocked! Keep going. Prestige for +1× permanent boost.'
+      ? 'Endless mode unlocked! Keep going. Prestige to earn more prestige points.'
       : `Goal: Reach ${fmt(state.goal)}`;
   }
 
-  /* -------- Upgrades -------- */
-  function upgradeCost(u){ return u.type==='ppc' ? ppcCost(u.level) : u.type==='size' ? sizeCost(u.level) : Infinity; }
+  /* ---------- Upgrades ---------- */
+  function upgradeCost(u){
+    return u.type === 'ppc'
+      ? ppcCost(u.level)
+      : u.type === 'size'
+      ? sizeCost(u.level)
+      : Infinity;
+  }
 
   function applyTargetSizeFromLevel(){
-    const u = (state.upgrades||[]).find(x=>x.id==='size');
+    const u = (state.upgrades || []).find(x => x.id === 'size');
     const lvl = u?.level || 0;
-    const factor = 1 + 0.10 * lvl; // +10% per level
+    const factor = 1 + 0.10 * lvl;
     const px = Math.round(BASE_TARGET_SIZE * factor);
-    document.documentElement.style.setProperty('--target-size', px+'px');
+    document.documentElement.style.setProperty('--target-size', px + 'px');
   }
 
   function buyUpgrade(u){
@@ -288,117 +497,312 @@ window.addEventListener('DOMContentLoaded', () => {
       applyTargetSizeFromLevel();
     }
 
-    updateHUD(); renderUpgrades(); save();
+    updateHUD();
+    renderUpgrades();
+    save();
   }
 
   function renderUpgrades(){
-    upgradeList.innerHTML='';
-    state.upgrades.forEach(u=>{
+    upgradeList.innerHTML = '';
+    state.upgrades.forEach(u => {
       const atMax = u.level >= u.max;
-      const cost = upgradeCost(u);
-      const nextLabel = (u.type==='ppc')
-        ? (u.level < 4 ? '+1 $/Click' : (u.level===4 ? 'Jump to $10/Click' : 'Max'))
+      const cost  = upgradeCost(u);
+      const nextLabel = (u.type === 'ppc')
+        ? (u.level < 4 ? '+1 $/Click' : (u.level === 4 ? 'Jump to $10/Click' : 'Max'))
         : (u.level < u.max ? '+10% size' : 'Max');
 
       const div = document.createElement('div');
-      div.className='item';
-      div.innerHTML = `<div class="meta"><div class="title">${u.name}</div>
-        <div class="note">${nextLabel} • Owned: ${u.level}/${u.max} • ${atMax ? 'MAX' : 'Cost: '+fmt(cost)}</div></div>`;
+      div.className = 'item';
+      div.innerHTML = `
+        <div class="meta">
+          <div class="title">${u.name}</div>
+          <div class="note">${nextLabel} • Owned: ${u.level}/${u.max} • ${atMax ? 'MAX' : 'Cost: '+fmt(cost)}</div>
+        </div>
+      `;
 
       const btn = document.createElement('button');
-      btn.className='btn accent';
+      btn.className = 'btn accent';
       btn.textContent = atMax ? 'Maxed' : 'Buy';
       btn.disabled = atMax || state.points < cost;
-      btn.addEventListener('click', ()=> buyUpgrade(u));
+      btn.addEventListener('click', () => buyUpgrade(u));
 
       div.appendChild(btn);
       upgradeList.appendChild(div);
     });
   }
 
-  /* -------- Producers -------- */
-  function recomputePPS(){ state.pps = state.producers.reduce((s,p)=>s + p.basePps*p.level, 0); }
-
-  function renderProducers(){
-    producerList.innerHTML='';
-    state.producers.forEach(p=>{
-      const cost = priceProducer(p.baseCost, p.level);
-      const div = document.createElement('div');
-      div.className='item';
-      div.innerHTML = `<div class="meta"><div class="title">${p.name}</div>
-        <div class="note">+${p.basePps.toFixed(2)} $/s each • Owned: ${p.level} • Cost: ${fmt(cost)}</div></div>`;
-      const btn = document.createElement('button');
-      btn.className='btn'; btn.textContent='Hire'; btn.disabled = state.points < cost;
-      btn.addEventListener('click', ()=>{
-        if(state.points < cost) return;
-        state.points -= cost; p.level++; recomputePPS();
-        updateHUD(); renderProducers(); save();
-      });
-      div.appendChild(btn); producerList.appendChild(div);
-    });
-  }
-
-  function refreshAffordability(){
-    $$('#upgradeList .item').forEach((el,i)=>{
+  function refreshUpgradeAffordability(){
+    $$('#upgradeList .item').forEach((el, i) => {
       const u = state.upgrades[i];
       const atMax = u.level >= u.max;
       const c = upgradeCost(u);
       const note = el.querySelector('.note');
-      const nextLabel = (u.type==='ppc')
-        ? (u.level < 4 ? '+1 $/Click' : (u.level===4 ? 'Jump to $10/Click' : 'Max'))
+      const nextLabel = (u.type === 'ppc')
+        ? (u.level < 4 ? '+1 $/Click' : (u.level === 4 ? 'Jump to $10/Click' : 'Max'))
         : (u.level < u.max ? '+10% size' : 'Max');
+
       note.textContent = `${nextLabel} • Owned: ${u.level}/${u.max} • ${atMax ? 'MAX' : 'Cost: '+fmt(c)}`;
       const btn = el.querySelector('button');
       btn.textContent = atMax ? 'Maxed' : 'Buy';
       btn.disabled = atMax || state.points < c;
     });
+  }
 
-    $$('#producerList .item').forEach((el,i)=>{
-      const p = state.producers[i];
-      const c = priceProducer(p.baseCost, p.level);
-      el.querySelector('button').disabled = state.points < c;
-      el.querySelector('.note').textContent = `+${p.basePps.toFixed(2)} $/s each • Owned: ${p.level} • Cost: ${fmt(c)}`;
+  /* ---------- Producers / PPS ---------- */
+  function recomputePPS(){
+    let total = 0;
+    PRODUCER_TIERS.forEach(tier => {
+      tier.producers.forEach(p => {
+        const lvl = state.producerLevels[p.id] || 0;
+        total += p.basePps * lvl;
+      });
+    });
+    state.pps = total;
+  }
+
+  function findProducerById(id){
+    for(const tier of PRODUCER_TIERS){
+      for(const p of tier.producers){
+        if(p.id === id) return p;
+      }
+    }
+    return null;
+  }
+
+  function buyProducer(prodId){
+    const p = findProducerById(prodId);
+    if(!p) return;
+    // find tier
+    let tierId = null;
+    PRODUCER_TIERS.forEach(tier => {
+      if(tier.producers.some(pp => pp.id === prodId)) tierId = tier.id;
+    });
+    if(!tierId || !state.unlockedTiers[tierId]) return;
+
+    const level = state.producerLevels[prodId] || 0;
+    const cost = priceProducer(p.baseCost, level);
+    if(state.points < cost) return;
+
+    state.points -= cost;
+    state.producerLevels[prodId] = level + 1;
+    recomputePPS();
+    renderProducerTree();
+    updateHUD();
+    save();
+  }
+
+  function unlockTier(tierId){
+    const tier = PRODUCER_TIERS.find(t => t.id === tierId);
+    if(!tier) return;
+    if(state.unlockedTiers[tierId]) return;
+
+    const cost = tier.unlockCost || 0;
+    const available = state.prestigePoints || 0;
+    if(available < cost) return;
+
+    if(!confirm(`Unlock ${tier.name}? This spends ${cost} prestige point(s) and lowers your multiplier.`)) return;
+
+    state.prestigePoints -= cost;
+    state.unlockedTiers[tierId] = true;
+    recomputePPS();
+    renderProducerTree();
+    updateHUD();
+    save();
+  }
+
+  function renderProducerTree(){
+    producerTreeEl.innerHTML = '';
+
+    PRODUCER_TIERS.forEach((tier, idx) => {
+      const unlocked = !!state.unlockedTiers[tier.id];
+      const tierDiv = document.createElement('div');
+      tierDiv.className = 'producer-tier';
+
+      const header = document.createElement('div');
+      header.className = 'producer-tier-header';
+      const title = document.createElement('div');
+      title.className = 'title';
+      title.textContent = tier.name;
+      const status = document.createElement('div');
+      status.className = 'status ' + (unlocked ? 'unlocked' : 'locked');
+      status.textContent = unlocked
+        ? 'Unlocked'
+        : `Locked – requires ${tier.unlockCost} prestige point${tier.unlockCost===1?'':'s'}`;
+      header.appendChild(title);
+      header.appendChild(status);
+      tierDiv.appendChild(header);
+
+      const grid = document.createElement('div');
+      grid.className = 'node-grid';
+
+      // Hub node
+      const hub = document.createElement('div');
+      hub.className = 'node node-hub';
+      hub.innerHTML = `
+        <div class="node-title">Tier Hub</div>
+        <div class="node-note">${unlocked ? 'Producers in this tier are active.' : 'Unlock to use producers in this tier.'}</div>
+      `;
+      grid.appendChild(hub);
+
+      // Producer nodes
+      tier.producers.forEach(p => {
+        const level = state.producerLevels[p.id] || 0;
+        const cost  = priceProducer(p.baseCost, level);
+
+        const node = document.createElement('div');
+        node.className = 'node';
+        node.dataset.producerId = p.id;
+        node.dataset.tierId = tier.id;
+
+        const titleEl = document.createElement('div');
+        titleEl.className = 'node-title';
+        titleEl.textContent = p.name;
+
+        const note = document.createElement('div');
+        note.className = 'node-note';
+        note.textContent = `+${p.basePps.toFixed(2)} $/s • Owned: ${level} • Cost: ${fmt(cost)}`;
+
+        const btn = document.createElement('button');
+        btn.className = 'btn small-btn';
+        btn.textContent = 'Hire';
+        btn.disabled = !unlocked || state.points < cost;
+        btn.addEventListener('click', () => buyProducer(p.id));
+
+        node.appendChild(titleEl);
+        node.appendChild(note);
+        node.appendChild(btn);
+        grid.appendChild(node);
+      });
+
+      // Unlock next tier node (if any)
+      if(idx < PRODUCER_TIERS.length - 1){
+        const nextTier = PRODUCER_TIERS[idx + 1];
+        const unlockNode = document.createElement('div');
+        unlockNode.className = 'node';
+        unlockNode.dataset.unlockTierId = nextTier.id;
+
+        const tTitle = document.createElement('div');
+        tTitle.className = 'node-title';
+        tTitle.textContent = `Unlock ${nextTier.name}`;
+
+        const nNote = document.createElement('div');
+        nNote.className = 'node-note';
+        nNote.textContent = `Cost: ${nextTier.unlockCost} prestige point${nextTier.unlockCost===1?'':'s'}`;
+
+        const btn = document.createElement('button');
+        btn.className = 'btn small-btn';
+        const already = !!state.unlockedTiers[nextTier.id];
+        btn.textContent = already ? 'Unlocked' : 'Unlock';
+        btn.disabled = already || (state.prestigePoints || 0) < nextTier.unlockCost;
+        btn.addEventListener('click', () => unlockTier(nextTier.id));
+
+        unlockNode.appendChild(tTitle);
+        unlockNode.appendChild(nNote);
+        unlockNode.appendChild(btn);
+        grid.appendChild(unlockNode);
+      }
+
+      tierDiv.appendChild(grid);
+      producerTreeEl.appendChild(tierDiv);
     });
   }
 
-  /* -------- Goal / Endless -------- */
+  function updateProducerAffordability(){
+    // Producer buttons
+    $('[id="producerTree"]') && $$('[data-producer-id]').forEach(node => {
+      const id = node.dataset.producerId;
+      const tierId = node.dataset.tierId;
+      const p = findProducerById(id);
+      if(!p) return;
+      const lvl = state.producerLevels[id] || 0;
+      const cost = priceProducer(p.baseCost, lvl);
+      const unlocked = !!state.unlockedTiers[tierId];
+
+      const note = node.querySelector('.node-note');
+      if(note){
+        note.textContent = `+${p.basePps.toFixed(2)} $/s • Owned: ${lvl} • Cost: ${fmt(cost)}`;
+      }
+      const btn = node.querySelector('button');
+      if(btn){
+        btn.disabled = !unlocked || state.points < cost;
+      }
+    });
+
+    // Unlock tier buttons
+    $$('[data-unlock-tier-id]').forEach(node => {
+      const tierId = node.dataset.unlockTierId;
+      const tier   = PRODUCER_TIERS.find(t => t.id === tierId);
+      if(!tier) return;
+      const cost = tier.unlockCost || 0;
+      const already = !!state.unlockedTiers[tierId];
+      const btn = node.querySelector('button');
+      const note = node.querySelector('.node-note');
+      if(note){
+        note.textContent = `Cost: ${cost} prestige point${cost===1?'':'s'}`;
+      }
+      if(btn){
+        btn.disabled = already || (state.prestigePoints || 0) < cost;
+        btn.textContent = already ? 'Unlocked' : 'Unlock';
+      }
+    });
+  }
+
+  /* ---------- Goal / endless ---------- */
   function checkGoal(){
     if(state.points >= state.goal){
-      if(state.goal >= 100000000){ state.endless = true; }
-      else { state.goal = Math.floor(state.goal * 2.7); }
+      if(state.goal >= 100000000){
+        state.endless = true;
+      } else {
+        state.goal = Math.floor(state.goal * 2.7);
+      }
     }
   }
 
-  /* -------- Moving target -------- */
+  /* ---------- Moving target ---------- */
   function moveTarget(){
     const a = clickArea.getBoundingClientRect();
     const s = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--target-size')) || BASE_TARGET_SIZE;
     const p = 10;
     const x = p + Math.random() * Math.max(0, a.width  - s - p);
     const y = p + Math.random() * Math.max(0, a.height - s - p);
-    targetBtn.style.left = x + 'px'; targetBtn.style.top = y + 'px';
+    targetBtn.style.left = x + 'px';
+    targetBtn.style.top  = y + 'px';
   }
-  new ResizeObserver(()=>moveTarget()).observe(clickArea);
+  new ResizeObserver(() => moveTarget()).observe(clickArea);
 
-  targetBtn.addEventListener('click', ()=>{
-    const gain = state.basePpc * state.ppcMult * (state.prestige + 1);
-    state.points += gain; checkGoal(); updateHUD(); refreshAffordability(); moveTarget(); save();
+  targetBtn.addEventListener('click', () => {
+    const mult = 1 + (state.prestigePoints || 0);
+    const gain = state.basePpc * state.ppcMult * mult;
+    state.points += gain;
+    checkGoal();
+    updateHUD();
+    refreshUpgradeAffordability();
+    updateProducerAffordability();
+    moveTarget();
+    save();
   });
-  targetBtn.addEventListener('keydown', (e)=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); targetBtn.click(); }});
+  targetBtn.addEventListener('keydown', e => {
+    if(e.key === ' ' || e.key === 'Enter'){
+      e.preventDefault();
+      targetBtn.click();
+    }
+  });
 
-  /* -------- Quiz (with rewards) -------- */
-  let currentQ = null, rewarded = false;
+  /* ---------- Quiz / boosts ---------- */
+  let currentQ = null;
+  let rewarded = false;
 
   function pickQuestion(){
     currentQ = QUIZ[Math.floor(Math.random()*QUIZ.length)];
     rewarded = false;
     qText.textContent = currentQ.q;
     qChoices.innerHTML = '';
-    currentQ.c.forEach((text, idx)=>{
+    currentQ.c.forEach((text, idx) => {
       const btn = document.createElement('button');
-      btn.type='button'; btn.className='choice';
+      btn.type = 'button';
+      btn.className = 'choice';
       btn.innerHTML = `<span class="pill">${String.fromCharCode(65+idx)}</span> <span>${text}</span>`;
-      btn.addEventListener('click', ()=> handleAnswer(idx, btn));
+      btn.addEventListener('click', () => handleAnswer(idx, btn));
       qChoices.appendChild(btn);
     });
   }
@@ -406,41 +810,57 @@ window.addEventListener('DOMContentLoaded', () => {
   function handleAnswer(idx, el){
     if(rewarded) return;
     const correct = idx === currentQ.a;
-    $$('.choice').forEach(b=> b.disabled=true);
+    $$('.choice').forEach(b => b.disabled = true);
     if(correct){
-      el.classList.add('correct'); showRewardChooser(); rewarded = true;
-    }else{
+      el.classList.add('correct');
+      showRewardChooser();
+      rewarded = true;
+    } else {
       el.classList.add('wrong');
       const msg = document.createElement('div');
-      msg.className='small'; msg.style.marginTop='8px';
-      msg.textContent='Not quite. Reroll or close and try again.';
+      msg.className = 'small';
+      msg.style.marginTop = '8px';
+      msg.textContent = 'Not quite. Reroll or close and try again.';
       qChoices.appendChild(msg);
     }
   }
 
   function showRewardChooser(){
-    const wrap = document.createElement('div'); wrap.style.marginTop='12px';
+    const wrap = document.createElement('div');
+    wrap.style.marginTop = '12px';
     wrap.innerHTML = `<div class="small">Nice! Pick your reward:</div>`;
-    const row = document.createElement('div'); row.className='row'; row.style.marginTop='8px';
-    const r1 = document.createElement('button'); r1.className='btn gold';   r1.textContent='2× $/Click for 60s';
-    const r2 = document.createElement('button'); r2.className='btn accent'; r2.textContent='Free cheapest upgrade';
-    r1.addEventListener('click', ()=>{ startBoost(60); quizModal.close(); });
-    r2.addEventListener('click', ()=>{ grantFreeUpgrade(); quizModal.close(); });
-    row.appendChild(r1); row.appendChild(r2); wrap.appendChild(row); qChoices.appendChild(wrap);
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.style.marginTop = '8px';
+    const r1 = document.createElement('button');
+    r1.className = 'btn gold';
+    r1.textContent = '2× $/Click for 60s';
+    const r2 = document.createElement('button');
+    r2.className = 'btn accent';
+    r2.textContent = 'Free cheapest upgrade';
+
+    r1.addEventListener('click', () => { startBoost(60); quizModal.close(); });
+    r2.addEventListener('click', () => { grantFreeUpgrade(); quizModal.close(); });
+
+    row.appendChild(r1);
+    row.appendChild(r2);
+    wrap.appendChild(row);
+    qChoices.appendChild(wrap);
   }
 
   function startBoost(seconds){
     state.ppcMult = 2;
-    state.boostEndsAt = performance.now() + seconds*1000;
-    $('#boostTimer strong').textContent = seconds+'s';
-    updateHUD(); save();
+    state.boostEndsAt = performance.now() + seconds * 1000;
+    boostTimer.textContent = seconds + 's';
+    updateHUD();
+    save();
   }
 
   function grantFreeUpgrade(){
     const candidates = state.upgrades
-      .filter(u=> u.level < u.max)
-      .map(u=> ({u, cost: upgradeCost(u)}))
-      .sort((a,b)=> a.cost - b.cost);
+      .filter(u => u.level < u.max)
+      .map(u => ({u, cost: upgradeCost(u)}))
+      .sort((a,b) => a.cost - b.cost);
     if(!candidates.length) return;
     const chosen = candidates[0].u;
     if(chosen.type === 'ppc'){
@@ -451,61 +871,111 @@ window.addEventListener('DOMContentLoaded', () => {
       chosen.level++;
       applyTargetSizeFromLevel();
     }
-    renderUpgrades(); updateHUD(); save();
+    renderUpgrades();
+    updateHUD();
+    save();
   }
 
-  $('#boostBtn').addEventListener('click', ()=>{ pickQuestion(); $('#quizModal').showModal(); });
-  $('#closeQuiz').addEventListener('click', ()=> $('#quizModal').close());
-  $('#rerollBtn').addEventListener('click', pickQuestion);
+  boostBtn.addEventListener('click', () => { pickQuestion(); quizModal.showModal(); });
+  closeQuiz.addEventListener('click', () => quizModal.close());
+  rerollBtn.addEventListener('click', pickQuestion);
 
-  /* -------- Prestige -------- */
-  function canPrestige(){ return state.points >= 100000000 || state.endless; }
+  /* ---------- Prestige ---------- */
+  function canPrestige(){
+    return state.points >= 100000000 || state.endless;
+  }
+
   function doPrestige(){
     if(!canPrestige()) return;
-    if(!confirm('Prestige? Reset progress for a permanent +1× currency multiplier.')) return;
-    state.prestige = (state.prestige||0) + 1;
-    state.points=0; state.basePpc=1; state.ppcMult=1; state.pps=0;
-    state.boostEndsAt=0; state.endless=false; state.goal=100000000;
-    state.upgrades.forEach(u=>u.level=0);
-    state.producers.forEach(p=>p.level=0);
-    applyTargetSizeFromLevel();
-    recomputePPS(); renderUpgrades(); renderProducers(); updateHUD(); moveTarget(); save();
-  }
-  $('#prestigeBtn').addEventListener('click', doPrestige);
+    if(!confirm('Prestige? Reset money and upgrades to gain +1 prestige point (stacking multiplier from unspent points).')) return;
+    state.totalPrestige = (state.totalPrestige || 0) + 1;
+    state.prestigePoints = (state.prestigePoints || 0) + 1;
 
-  /* -------- Loop & save -------- */
+    // Reset run-based progress
+    state.points = 0;
+    state.basePpc = 1;
+    state.ppcMult = 1;
+    state.pps = 0;
+    state.boostEndsAt = 0;
+    state.endless = false;
+    state.goal = 100000000;
+
+    state.upgrades.forEach(u => u.level = 0);
+    state.producerLevels = {}; // tiers remain unlocked; you paid prestige to unlock them
+
+    applyTargetSizeFromLevel();
+    recomputePPS();
+    renderUpgrades();
+    renderProducerTree();
+    updateHUD();
+    moveTarget();
+    save();
+  }
+  prestigeBtn.addEventListener('click', doPrestige);
+
+  /* ---------- Producer modal open/close ---------- */
+  openProducerBtn.addEventListener('click', () => {
+    renderProducerTree();
+    producerModal.showModal();
+  });
+  closeProducerModal.addEventListener('click', () => producerModal.close());
+
+  /* ---------- Save button ---------- */
+  saveBtn.addEventListener('click', () => {
+    save();
+    const note = document.createElement('span');
+    note.textContent = ' Saved!';
+    note.className = 'pill';
+    note.style.marginLeft = '8px';
+    note.style.opacity = '0.9';
+    saveBtn.after(note);
+    setTimeout(() => note.remove(), 1200);
+  });
+
+  /* ---------- Game loop ---------- */
   function tick(){
     const now = performance.now();
-    const dt = Math.min(1, (now - state.lastTick)/1000);
+    const dt = Math.min(1, (now - state.lastTick) / 1000);
     state.lastTick = now;
 
-    state.points += state.pps * dt * (state.prestige + 1);
+    const mult = 1 + (state.prestigePoints || 0);
+    state.points += state.pps * dt * mult;
 
     if(state.boostEndsAt > 0){
       const remaining = Math.max(0, Math.ceil((state.boostEndsAt - now)/1000));
-      $('#boostTimer strong').textContent = remaining ? (remaining+'s') : '—';
-      if(!remaining){ state.ppcMult = 1; state.boostEndsAt = 0; }
+      boostTimer.textContent = remaining ? (remaining + 's') : '—';
+      if(!remaining){
+        state.ppcMult = 1;
+        state.boostEndsAt = 0;
+      }
     }
 
-    checkGoal(); updateHUD(); refreshAffordability();
+    checkGoal();
+    updateHUD();
+    refreshUpgradeAffordability();
+    updateProducerAffordability();
     requestAnimationFrame(tick);
   }
 
-  /* -------- Boot -------- */
-  load();           // load save (if any)
-  initContent();    // ensure arrays exist
-  migrate();        // merge any new upgrades/producers into old saves
-  recomputePPS();
+  /* ---------- Boot ---------- */
+  load();
+  initContent();
+  migrate();     // ensure tiers & structures are correct
   renderUpgrades();
-  renderProducers();   // <-- use the real function
-  updateHUD(); moveTarget();
+  renderProducerTree();
+  updateHUD();
+  moveTarget();
 
   if(STORAGE_OK){
-    setInterval(save,15000);
+    setInterval(save, 15000);
     window.addEventListener('beforeunload', save);
-    document.addEventListener('visibilitychange', ()=>{ if(document.hidden) save(); });
+    document.addEventListener('visibilitychange', () => { if(document.hidden) save(); });
   }
+
   requestAnimationFrame(tick);
+
+  // Dev peek if you want it in console:
+  window.__state = state;
 });
 </script>
 </body>
