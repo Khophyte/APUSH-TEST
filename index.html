@@ -27,12 +27,14 @@
     .card .head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
     .card .body{padding:16px}
 
+    /* Click Area */
     .click-area{position:relative;width:100%;aspect-ratio:1/1;border-radius:24px;
       background:radial-gradient(200px 200px at 30% 25%, rgba(255,255,255,.12), transparent 60%),
                  linear-gradient(180deg,#1a2a53,#121d3a);
       box-shadow:0 20px 60px rgba(0,0,0,.5), inset 0 0 0 2px rgba(255,255,255,.06);
       overflow:hidden}
 
+    /* Moving Target */
     .target{position:absolute;width:var(--target-size);height:var(--target-size);border-radius:50%;
       background:
         radial-gradient(140% 140% at 30% 25%,
@@ -146,8 +148,10 @@ window.addEventListener('DOMContentLoaded', () => {
   const $ = s => document.querySelector(s);
   const $$ = s => document.querySelectorAll(s);
 
+  /* -------- Storage detection -------- */
   const STORAGE_OK = (()=>{ try{ const t='__apush5__'; localStorage.setItem(t,'1'); localStorage.removeItem(t); return true; }catch(_){ return false; } })();
 
+  /* -------- State -------- */
   const BASE_TARGET_SIZE = 56; // px
   const state = {
     points: 0, basePpc: 1, ppcMult: 1, pps: 0,
@@ -156,7 +160,7 @@ window.addEventListener('DOMContentLoaded', () => {
     boostEndsAt: 0, lastTick: performance.now()
   };
 
-  /* ---------- Pricing ---------- */
+  /* -------- Pricing helpers -------- */
   const pow = Math.pow;
   function ppcCost(level){
     const base = 50;
@@ -167,7 +171,7 @@ window.addEventListener('DOMContentLoaded', () => {
   function sizeCost(level){ const base = 350; return Math.floor(base * pow(2.1, level)); }
   function priceProducer(base, n){ return Math.floor(base * Math.pow(1.55, n)); }
 
-  /* ---------- Catalogs ---------- */
+  /* -------- Catalogs -------- */
   const UPGRADE_DATA = [
     { id:'ppc',  name:'PPC Upgrade',   desc:'+1 $/Click (final jumps to $10)', type:'ppc',  max:5,  costFn: ppcCost },
     { id:'size', name:'Target Size',   desc:'+10% button size',                type:'size', max:10, costFn: sizeCost }
@@ -185,31 +189,43 @@ window.addEventListener('DOMContentLoaded', () => {
     {q:'The Compromise of 1877 resulted in...', c:['renewed Radical Reconstruction','federal troops withdrawn from the South','immediate Black suffrage','annexation of Cuba'], a:1},
   ];
 
-  /* ---------- Persistence ---------- */
-  function save(){ if(!STORAGE_OK) return; try{ localStorage.setItem('apush5-save', JSON.stringify(state)); }catch(e){ console.warn('save failed', e); } }
+  /* -------- Persistence -------- */
+  const SAVE_KEY = 'apush5-save-v2';
+  const SCHEMA = 2;
+
+  function save(){
+    if(!STORAGE_OK) return;
+    try{
+      const payload = { ...state, schemaVersion: SCHEMA };
+      localStorage.setItem(SAVE_KEY, JSON.stringify(payload));
+    }catch(e){ console.warn('save failed', e); }
+  }
   function load(){
     if(!STORAGE_OK) return;
-    const raw = localStorage.getItem('apush5-save'); if(!raw) return;
-    try{ Object.assign(state, JSON.parse(raw)); }catch(e){ console.warn('load failed', e); }
+    const raw = localStorage.getItem(SAVE_KEY); if(!raw) return;
+    try{
+      const data = JSON.parse(raw);
+      Object.assign(state, data);
+      if(!data.schemaVersion || data.schemaVersion < SCHEMA){
+        migrate();
+        state.schemaVersion = SCHEMA;
+        save();
+      }
+    }catch(e){ console.warn('load failed', e); }
   }
 
-  /* ---------- Migration (adds new upgrades/producers to old saves) ---------- */
+  /* -------- Migration (adds new upgrades/producers to old saves) -------- */
   function migrate(){
-    // Upgrades: ensure every catalog item exists; keep existing levels
     const byId = Object.fromEntries((state.upgrades||[]).map(u=>[u.id,u]));
-    const merged = UPGRADE_DATA.map(def => byId[def.id] ? {...def, ...byId[def.id]} : {...def, level:0});
-    state.upgrades = merged;
+    state.upgrades = UPGRADE_DATA.map(def => byId[def.id] ? {...def, ...byId[def.id]} : {...def, level:0});
 
-    // Producers: same pattern
     const pById = Object.fromEntries((state.producers||[]).map(p=>[p.id,p]));
-    const pMerged = PRODUCER_DATA.map(def => pById[def.id] ? {...def, ...pById[def.id]} : {...def, level:0});
-    state.producers = pMerged;
+    state.producers = PRODUCER_DATA.map(def => pById[def.id] ? {...def, ...pById[def.id]} : {...def, level:0});
 
-    // Apply size if present in save
     applyTargetSizeFromLevel();
   }
 
-  /* ---------- DOM ---------- */
+  /* -------- DOM -------- */
   const moneyEl=$('#currency'), ppcEl=$('#ppc'), ppsEl=$('#pps'), multEl=$('#mult'), prestigeEl=$('#prestige');
   const progressBar=$('#progressBar'), nextGoalEl=$('#nextGoal'), boostTimer=$('#boostTimer strong');
   const upgradeList=$('#upgradeList'), producerList=$('#producerList');
@@ -220,14 +236,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const saveBtn=$('#saveBtn'), prestigeBtn=$('#prestigeBtn');
 
-  /* ---------- Init content ---------- */
+  /* -------- Init content -------- */
   function initContent(){
     if(!state.upgrades.length)  state.upgrades  = UPGRADE_DATA.map(u=>({...u, level:0}));
     if(!state.producers.length) state.producers = PRODUCER_DATA.map(p=>({...p, level:0}));
     applyTargetSizeFromLevel();
   }
 
-  /* ---------- HUD ---------- */
+  /* -------- HUD -------- */
   function fmt(n){ if(n>=1e9) return '$'+(n/1e9).toFixed(2)+'B';
                    if(n>=1e6) return '$'+(n/1e6).toFixed(2)+'M';
                    if(n>=1e3) return '$'+(n/1e3).toFixed(2)+'k';
@@ -246,7 +262,7 @@ window.addEventListener('DOMContentLoaded', () => {
       : `Goal: Reach ${fmt(state.goal)}`;
   }
 
-  /* ---------- Upgrades ---------- */
+  /* -------- Upgrades -------- */
   function upgradeCost(u){ return u.type==='ppc' ? ppcCost(u.level) : u.type==='size' ? sizeCost(u.level) : Infinity; }
 
   function applyTargetSizeFromLevel(){
@@ -280,9 +296,9 @@ window.addEventListener('DOMContentLoaded', () => {
     state.upgrades.forEach(u=>{
       const atMax = u.level >= u.max;
       const cost = upgradeCost(u);
-      let nextLabel;
-      if(u.type==='ppc') nextLabel = u.level < 4 ? '+1 $/Click' : (u.level===4 ? 'Jump to $10/Click' : 'Max');
-      else nextLabel = u.level < u.max ? '+10% size' : 'Max';
+      const nextLabel = (u.type==='ppc')
+        ? (u.level < 4 ? '+1 $/Click' : (u.level===4 ? 'Jump to $10/Click' : 'Max'))
+        : (u.level < u.max ? '+10% size' : 'Max');
 
       const div = document.createElement('div');
       div.className='item';
@@ -300,8 +316,9 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ---------- Producers ---------- */
+  /* -------- Producers -------- */
   function recomputePPS(){ state.pps = state.producers.reduce((s,p)=>s + p.basePps*p.level, 0); }
+
   function renderProducers(){
     producerList.innerHTML='';
     state.producers.forEach(p=>{
@@ -344,7 +361,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ---------- Goal / Endless ---------- */
+  /* -------- Goal / Endless -------- */
   function checkGoal(){
     if(state.points >= state.goal){
       if(state.goal >= 100000000){ state.endless = true; }
@@ -352,7 +369,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  /* ---------- Moving target ---------- */
+  /* -------- Moving target -------- */
   function moveTarget(){
     const a = clickArea.getBoundingClientRect();
     const s = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--target-size')) || BASE_TARGET_SIZE;
@@ -369,7 +386,7 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   targetBtn.addEventListener('keydown', (e)=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); targetBtn.click(); }});
 
-  /* ---------- Quiz (with rewards) ---------- */
+  /* -------- Quiz (with rewards) -------- */
   let currentQ = null, rewarded = false;
 
   function pickQuestion(){
@@ -441,7 +458,7 @@ window.addEventListener('DOMContentLoaded', () => {
   $('#closeQuiz').addEventListener('click', ()=> $('#quizModal').close());
   $('#rerollBtn').addEventListener('click', pickQuestion);
 
-  /* ---------- Prestige ---------- */
+  /* -------- Prestige -------- */
   function canPrestige(){ return state.points >= 100000000 || state.endless; }
   function doPrestige(){
     if(!canPrestige()) return;
@@ -456,11 +473,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   $('#prestigeBtn').addEventListener('click', doPrestige);
 
-  /* ---------- Loop & save ---------- */
-  function recomputePPS(){ state.pps = state.producers.reduce((s,p)=>s + p.basePps*p.level, 0); }
-  function renderProducers(){ /* filled above */ } // defined earlier
-  const _renderProducers = renderProducers; // keep reference
-
+  /* -------- Loop & save -------- */
   function tick(){
     const now = performance.now();
     const dt = Math.min(1, (now - state.lastTick)/1000);
@@ -478,13 +491,13 @@ window.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(tick);
   }
 
-  /* ---------- Boot ---------- */
-  load();           // 1) load old save
-  initContent();    // 2) ensure arrays exist
-  migrate();        // 3) merge in any new upgrades/producers
+  /* -------- Boot -------- */
+  load();           // load save (if any)
+  initContent();    // ensure arrays exist
+  migrate();        // merge any new upgrades/producers into old saves
   recomputePPS();
   renderUpgrades();
-  _renderProducers(); // call the actual function
+  renderProducers();   // <-- use the real function
   updateHUD(); moveTarget();
 
   if(STORAGE_OK){
