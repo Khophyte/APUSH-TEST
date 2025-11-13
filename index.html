@@ -155,6 +155,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const STORAGE_OK = (()=>{ try{ const t='__apush5__'; localStorage.setItem(t,'1'); localStorage.removeItem(t); return true; }catch(_){ return false; } })();
 
   /* -------- State -------- */
+  const BASE_TARGET_SIZE = 56; // px (matches CSS var default)
   const state = {
     points: 0, basePpc: 1, ppcMult: 1, pps: 0,
     goal: 100000000, prestige: 0, endless: false,
@@ -162,9 +163,49 @@ window.addEventListener('DOMContentLoaded', () => {
     boostEndsAt: 0, lastTick: performance.now()
   };
 
+  /* -------- Pricing helpers -------- */
+  const pow = Math.pow;
+  const priceScale = (base, n, r) => Math.floor(base * pow(r, n)); // generic geometric
+
+  // PPC special cost function:
+  // level 0..3: base * 1.55^level; level 4 (buying final): 4x previous cost
+  function ppcCost(level){
+    const base = 50;
+    if(level <= 3) return Math.floor(base * pow(1.55, level));
+    if(level === 4){
+      const prev = Math.floor(base * pow(1.55, 3));
+      return prev * 4;
+    }
+    return Infinity; // maxed
+  }
+
+  // Target Size upgrade cost: base 350 (≈7x PPC base), ×2.1 each level
+  function sizeCost(level){
+    const base = 350;
+    return Math.floor(base * pow(2.1, level));
+  }
+
   /* -------- Data -------- */
-  const price = (base,n)=>Math.floor(base*Math.pow(1.55,n));
-  const UPGRADE_DATA = [{ id:'ppc', name:'PPC Upgrade', desc:'+1 $/Click', ppc:1, baseCost:50 }];
+  // Two upgrades: PPC (max 5), Target Size (max 10)
+  const UPGRADE_DATA = [
+    {
+      id:'ppc',
+      name:'PPC Upgrade',
+      desc:'+1 $/Click (final jumps to $10)',
+      type:'ppc',
+      max:5,
+      costFn: ppcCost
+    },
+    {
+      id:'size',
+      name:'Target Size',
+      desc:'+10% button size',
+      type:'size',
+      max:10,
+      costFn: sizeCost
+    }
+  ];
+
   const PRODUCER_DATA = [
     { id:'pamphleteers', name:'Abolitionist Pamphleteers', basePps:0.05, baseCost:200 },
     { id:'republican-clubs', name:'Republican Clubs', basePps:0.2, baseCost:1500 }
@@ -206,8 +247,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
   /* -------- Init content -------- */
   function initContent(){
-    if(!state.upgrades.length)  state.upgrades  = UPGRADE_DATA.map(u=>({...u, level:0}));
-    if(!state.producers.length) state.producers = PRODUCER_DATA.map(p=>({...p, level:0}));
+    if(!state.upgrades.length){
+      state.upgrades = UPGRADE_DATA.map(u=>({...u, level:0}));
+    }
+    if(!state.producers.length){
+      state.producers = PRODUCER_DATA.map(p=>({...p, level:0}));
+    }
+    // Apply target size from saved level
+    applyTargetSizeFromLevel();
   }
 
   /* -------- HUD -------- */
@@ -230,31 +277,80 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   /* -------- Upgrades -------- */
+  function upgradeCost(u){
+    if(u.type === 'ppc') return ppcCost(u.level);
+    if(u.type === 'size') return sizeCost(u.level);
+    return Infinity;
+  }
+
+  function applyTargetSizeFromLevel(){
+    const sizeU = state.upgrades.find(x=>x.id==='size');
+    const factor = 1 + 0.10 * (sizeU?.level || 0); // +10% per level
+    const px = Math.round(BASE_TARGET_SIZE * factor);
+    document.documentElement.style.setProperty('--target-size', px+'px');
+  }
+
+  function buyUpgrade(u){
+    if(u.level >= u.max) return;
+
+    // Compute cost & effects
+    const cost = upgradeCost(u);
+    if(state.points < cost) return;
+
+    state.points -= cost;
+
+    if(u.type === 'ppc'){
+      // Levels 1-4: +1 each; Level 5: jump to $10 total base
+      if(u.level < 4){ state.basePpc += 1; }
+      else if(u.level === 4){
+        // Before buying final, PPC from base is 1 + 4 = 5; raise to 10 (+5)
+        state.basePpc += 5;
+      }
+      u.level++;
+    } else if(u.type === 'size'){
+      u.level++;
+      applyTargetSizeFromLevel();
+    }
+
+    updateHUD(); renderUpgrades(); save();
+  }
+
   function renderUpgrades(){
     upgradeList.innerHTML='';
     state.upgrades.forEach(u=>{
-      const cost = price(u.baseCost, u.level);
+      const atMax = u.level >= u.max;
+      const cost = upgradeCost(u);
+      let details = '';
+      if(u.type === 'ppc'){
+        const nextLabel = u.level < 4 ? '+1 $/Click' : (u.level === 4 ? 'Jump to $10/Click' : 'Max');
+        details = `${nextLabel} • Owned: ${u.level}/${u.max} • ${atMax ? 'MAX' : 'Cost: '+fmt(cost)}`;
+      }else if(u.type === 'size'){
+        const nextLabel = u.level < u.max ? '+10% size' : 'Max';
+        details = `${nextLabel} • Owned: ${u.level}/${u.max} • ${atMax ? 'MAX' : 'Cost: '+fmt(cost)}`;
+      }
+
       const div = document.createElement('div');
       div.className='item';
-      div.innerHTML = `<div class="meta"><div class="title">${u.name}</div>
-        <div class="note">${u.desc} • Owned: ${u.level} • Cost: ${fmt(cost)}</div></div>`;
+      div.innerHTML = `<div class="meta"><div class="title">${u.name}</div><div class="note">${details}</div></div>`;
+
       const btn = document.createElement('button');
-      btn.className='btn accent'; btn.textContent='Buy'; btn.disabled = state.points < cost;
-      btn.addEventListener('click', ()=>{
-        if(state.points < cost) return;
-        state.points -= cost; u.level++; state.basePpc += u.ppc;
-        updateHUD(); renderUpgrades(); save();
-      });
-      div.appendChild(btn); upgradeList.appendChild(div);
+      btn.className='btn accent';
+      btn.textContent = atMax ? 'Maxed' : 'Buy';
+      btn.disabled = atMax || state.points < cost;
+      btn.addEventListener('click', ()=> buyUpgrade(u));
+
+      div.appendChild(btn);
+      upgradeList.appendChild(div);
     });
   }
 
   /* -------- Producers -------- */
+  function priceProducer(base, n){ return Math.floor(base * Math.pow(1.55, n)); }
   function recomputePPS(){ state.pps = state.producers.reduce((s,p)=>s + p.basePps*p.level, 0); }
   function renderProducers(){
     producerList.innerHTML='';
     state.producers.forEach(p=>{
-      const cost = price(p.baseCost, p.level);
+      const cost = priceProducer(p.baseCost, p.level);
       const div = document.createElement('div');
       div.className='item';
       div.innerHTML = `<div class="meta"><div class="title">${p.name}</div>
@@ -271,13 +367,28 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   function refreshAffordability(){
+    // upgrades
     $$('#upgradeList .item').forEach((el,i)=>{
-      const u = state.upgrades[i], c = price(u.baseCost, u.level);
-      el.querySelector('button').disabled = state.points < c;
-      el.querySelector('.note').textContent = `${u.desc} • Owned: ${u.level} • Cost: ${fmt(c)}`;
+      const u = state.upgrades[i];
+      const atMax = u.level >= u.max;
+      const c = upgradeCost(u);
+      const note = el.querySelector('.note');
+      if(u.type==='ppc'){
+        const nextLabel = u.level < 4 ? '+1 $/Click' : (u.level === 4 ? 'Jump to $10/Click' : 'Max');
+        note.textContent = `${nextLabel} • Owned: ${u.level}/${u.max} • ${atMax ? 'MAX' : 'Cost: '+fmt(c)}`;
+      }else{
+        const nextLabel = u.level < u.max ? '+10% size' : 'Max';
+        note.textContent = `${nextLabel} • Owned: ${u.level}/${u.max} • ${atMax ? 'MAX' : 'Cost: '+fmt(c)}`;
+      }
+      const btn = el.querySelector('button');
+      btn.textContent = atMax ? 'Maxed' : 'Buy';
+      btn.disabled = atMax || state.points < c;
     });
+
+    // producers
     $$('#producerList .item').forEach((el,i)=>{
-      const p = state.producers[i], c = price(p.baseCost, p.level);
+      const p = state.producers[i];
+      const c = priceProducer(p.baseCost, p.level);
       el.querySelector('button').disabled = state.points < c;
       el.querySelector('.note').textContent = `+${p.basePps.toFixed(2)} $/s each • Owned: ${p.level} • Cost: ${fmt(c)}`;
     });
@@ -293,7 +404,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   /* -------- Moving target -------- */
   function moveTarget(){
-    const a = clickArea.getBoundingClientRect(), s = 56, p = 10;
+    const a = clickArea.getBoundingClientRect(), s = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--target-size')) || BASE_TARGET_SIZE, p = 10;
     const x = p + Math.random() * Math.max(0, a.width  - s - p);
     const y = p + Math.random() * Math.max(0, a.height - s - p);
     targetBtn.style.left = x + 'px'; targetBtn.style.top = y + 'px';
@@ -353,21 +464,33 @@ window.addEventListener('DOMContentLoaded', () => {
   function startBoost(seconds){
     state.ppcMult = 2;
     state.boostEndsAt = performance.now() + seconds*1000;
-    boostTimer.textContent = seconds+'s';
+    $('#boostTimer strong').textContent = seconds+'s';
     updateHUD(); save();
   }
 
   function grantFreeUpgrade(){
-    const withCost = state.upgrades.map(u=>({u, cost: price(u.baseCost, u.level)}))
-                                   .sort((a,b)=>a.cost-b.cost);
-    const chosen = withCost[0].u;
-    chosen.level++; state.basePpc += chosen.ppc;
+    // choose the cheapest non-maxed upgrade
+    const candidates = state.upgrades
+      .filter(u=> u.level < u.max)
+      .map(u=> ({u, cost: upgradeCost(u)}))
+      .sort((a,b)=> a.cost - b.cost);
+    if(!candidates.length){ return; }
+    const chosen = candidates[0].u;
+    // give it for free
+    if(chosen.type === 'ppc'){
+      if(chosen.level < 4){ state.basePpc += 1; }
+      else if(chosen.level === 4){ state.basePpc += 5; }
+      chosen.level++;
+    } else if(chosen.type === 'size'){
+      chosen.level++;
+      applyTargetSizeFromLevel();
+    }
     renderUpgrades(); updateHUD(); save();
   }
 
-  boostBtn.addEventListener('click', ()=>{ pickQuestion(); quizModal.showModal(); });
-  closeQuiz.addEventListener('click', ()=> quizModal.close());
-  rerollBtn.addEventListener('click', pickQuestion);
+  $('#boostBtn').addEventListener('click', ()=>{ pickQuestion(); $('#quizModal').showModal(); });
+  $('#closeQuiz').addEventListener('click', ()=> $('#quizModal').close());
+  $('#rerollBtn').addEventListener('click', pickQuestion);
 
   /* -------- Prestige -------- */
   function canPrestige(){ return state.points >= 100000000 || state.endless; }
@@ -377,20 +500,22 @@ window.addEventListener('DOMContentLoaded', () => {
     state.prestige = (state.prestige||0) + 1;
     state.points=0; state.basePpc=1; state.ppcMult=1; state.pps=0;
     state.boostEndsAt=0; state.endless=false; state.goal=100000000;
-    state.upgrades.forEach(u=>u.level=0); state.producers.forEach(p=>p.level=0);
+    state.upgrades.forEach(u=>u.level=0); // reset upgrades
+    state.producers.forEach(p=>p.level=0);
+    applyTargetSizeFromLevel(); // reset visual size
     recomputePPS(); renderUpgrades(); renderProducers(); updateHUD(); moveTarget(); save();
   }
-  prestigeBtn.addEventListener('click', doPrestige);
+  $('#prestigeBtn').addEventListener('click', doPrestige);
 
   /* -------- Save button -------- */
-  saveBtn.addEventListener('click', ()=>{
+  $('#saveBtn').addEventListener('click', ()=>{
     save();
     const t=document.createElement('span'); t.textContent=' Saved! '; t.className='pill';
-    t.style.marginLeft='8px'; t.style.opacity='0.9'; saveBtn.after(t); setTimeout(()=>t.remove(),1200);
+    t.style.marginLeft='8px'; t.style.opacity='0.9'; $('#saveBtn').after(t); setTimeout(()=>t.remove(),1200);
   });
-  if(!STORAGE_OK){ saveBtn.disabled=true; saveBtn.title='Saving disabled on this origin.'; }
+  if(!STORAGE_OK){ $('#saveBtn').disabled=true; $('#saveBtn').title='Saving disabled on this origin.'; }
 
-  /* -------- Game loop -------- */
+  /* -------- Producers loop & Boost timer -------- */
   function tick(){
     const now = performance.now();
     const dt = Math.min(1, (now - state.lastTick)/1000);
@@ -402,7 +527,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // Boost timer
     if(state.boostEndsAt > 0){
       const remaining = Math.max(0, Math.ceil((state.boostEndsAt - now)/1000));
-      boostTimer.textContent = remaining ? (remaining+'s') : '—';
+      $('#boostTimer strong').textContent = remaining ? (remaining+'s') : '—';
       if(!remaining){ state.ppcMult = 1; state.boostEndsAt = 0; }
     }
 
