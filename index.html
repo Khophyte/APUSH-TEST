@@ -93,12 +93,11 @@
     <header>
       <div>
         <h1>APUSH Unit 5 Clicker</h1>
-        <div class="subtitle">Slow-burn incremental game • Earn <strong>Points</strong> by clicking, buy upgrades, and snag short boosts by answering Unit 5 questions (1844–1877).</div>
+        <div class="subtitle">Slow-burn incremental game • Earn <strong>USD</strong> by clicking, buy upgrades, and snag short boosts by answering Unit 5 questions (1844–1877).</div>
       </div>
       <div class="row">
         <button id="saveBtn" class="btn alt" title="Save now">💾 Save</button>
         <button id="prestigeBtn" class="btn gold" title="Reset for permanent +1× currency">🌀 Prestige</button>
-        <button id="resetBtn" class="btn danger" title="Hard reset">♻️ Reset</button>
       </div>
     </header>
 
@@ -107,17 +106,17 @@
       <section class="card" aria-labelledby="clickerLabel">
         <div class="head"><div class="row">
           <div>
-            <div id="currency" class="money" aria-live="polite">0</div>
-            <div class="subtitle">Points</div>
+            <div id="currency" class="money" aria-live="polite">$0</div>
+            <div class="subtitle">Dollars</div>
           </div>
-          <div class="pill" title="Points per click"><span>🖱️ PPC:</span><strong id="ppc">1</strong></div>
-          <div class="pill" title="Passive points per second"><span>⏱️ PPS:</span><strong id="pps">0</strong></div>
+          <div class="pill" title="Dollars per click"><span>🖱️ $/Click:</span><strong id="ppc">1</strong></div>
+          <div class="pill" title="Dollars per second"><span>⏱️ $/s:</span><strong id="pps">0</strong></div>
           <div class="pill" title="Current multiplier"><span>⚡ Mult:</span><strong id="mult">1×</strong></div>
           <div class="pill" title="Prestige level"><span>✨ Prestige:</span><strong id="prestige">0 (×1)</strong></div>
         </div></div>
         <div class="body">
-          <button id="clickBtn" class="big-btn" aria-labelledby="clickerLabel">Click for Points</button>
-          <p id="clickerLabel" class="muted" style="margin-top:12px">Base PPC grows with upgrades. Progression is intentionally <em>slow</em>—use quiz boosts wisely.</p>
+          <button id="clickBtn" class="big-btn" aria-labelledby="clickerLabel">Click for $</button>
+          <p id="clickerLabel" class="muted" style="margin-top:12px">Base $/Click grows with upgrades. Progression is intentionally <em>slow</em>—use quiz boosts wisely.</p>
 
           <div class="row" style="margin-top:12px">
             <button id="boostBtn" class="btn gold" title="Answer a Unit 5 question for a reward">🎁 Quiz Boost</button>
@@ -126,7 +125,7 @@
 
           <div style="margin-top:14px">
             <div class="meter" aria-hidden="true"><div id="progressBar"></div></div>
-            <div class="small muted" id="nextGoal">Goal: Reach 100,000,000 Points</div>
+            <div class="small muted" id="nextGoal">Goal: Reach $100,000,000</div>
           </div>
         </div>
       </section>
@@ -176,7 +175,7 @@
     <div class="modal-body small">
       <ul>
         <li>Click <em>Quiz Boost</em> to get a random multiple-choice question from APUSH Unit 5 (1844–1877).</li>
-        <li>If you answer correctly, choose one: <strong>2× PPC for 60s</strong> or a <strong>free upgrade</strong> (cheapest available).</li>
+        <li>If you answer correctly, choose one: <strong>2× $/Click for 60s</strong> or a <strong>free upgrade</strong> (cheapest available).</li>
         <li>Wrong answers have no penalty. You can try again any time.</li>
         <li>Boosts don’t stack; starting a new one replaces the old timer.</li>
       </ul>
@@ -216,7 +215,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // --- Content: Upgrades & Producers (steep, slow progression) ---
   const UPGRADE_DATA = [
-    { id:'ppc-core', name:'PPC Upgrade', desc:'+1 PPC', ppc:+1, baseCost: 50 },
+    { id:'ppc-core', name:'PPC Upgrade', desc:'+1 $/Click', ppc:+1, baseCost: 50 },
   ];
   const PRODUCER_DATA = [
     { id:'pamphleteers', name:'Abolitionist Pamphleteers', basePps: 0.05, baseCost: 200 },
@@ -225,11 +224,10 @@ window.addEventListener('DOMContentLoaded', () => {
     { id:'rr-tycoons', name:'Railroad Tycoons', basePps: 3.2, baseCost: 40000 },
   ];
 
-  // Exponential price scaling to keep it slow
+  // Price curve (applies to all items)
   const price = (base, n) => Math.floor(base * Math.pow(1.55, n));
 
   // --- Quiz Bank (APUSH Unit 5: 1844–1877) ---
-  // Each: {q, c[], a}
   const QUIZ = [
     {q:'What concept justified U.S. expansion to the Pacific?', c:['Containment','Manifest Destiny','Isolationism','Popular Sovereignty'], a:1},
     {q:'Which war was sparked in part by the annexation of Texas?', c:['Spanish-American War','War of 1812','Mexican–American War','Civil War'], a:2},
@@ -325,24 +323,25 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Render helpers
   function fmt(n){
-    if(n >= 1e9) return (n/1e9).toFixed(2)+'B';
-    if(n >= 1e6) return (n/1e6).toFixed(2)+'M';
-    if(n >= 1e3) return (n/1e3).toFixed(2)+'k';
-    return Math.floor(n).toString();
+    // prefix with $ and compact units
+    if(n >= 1e9) return '$' + (n/1e9).toFixed(2) + 'B';
+    if(n >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
+    if(n >= 1e3) return '$' + (n/1e3).toFixed(2) + 'k';
+    return '$' + Math.floor(n).toString();
   }
 
   function updateHUD(){
     const ppc = state.basePpc * state.ppcMult;
     moneyEl.textContent = fmt(state.points);
-    ppcEl.textContent = fmt(ppc);
-    ppsEl.textContent = state.pps.toFixed(2);
+    ppcEl.textContent = fmt(ppc);              // shows like $12
+    ppsEl.textContent = '$' + state.pps.toFixed(2); // $/s
     multEl.textContent = state.ppcMult.toFixed(1)+'×';
     prestigeEl.textContent = `${state.prestige} (×${state.prestige+1})`;
     const prog = Math.max(0, Math.min(1, state.points / state.goal));
     progressBar.style.width = (prog*100).toFixed(1)+'%';
     nextGoalEl.textContent = state.endless
       ? 'Endless mode unlocked! Keep going. Prestige for +1× permanent boost.'
-      : `Goal: Reach ${fmt(state.goal)} Points`;
+      : `Goal: Reach ${fmt(state.goal)}`;
   }
 
   // Render upgrade cards
@@ -383,7 +382,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const gain = p.basePps;
       const el = document.createElement('div');
       el.className = 'item';
-      el.innerHTML = `<div class="meta"><div class="title">${p.name}</div><div class="note">+${gain.toFixed(2)} PPS each • Owned: ${n} • Cost: ${fmt(cost)}</div></div>`;
+      el.innerHTML = `<div class="meta"><div class="title">${p.name}</div><div class="note">+${gain.toFixed(2)} $/s each • Owned: ${n} • Cost: ${fmt(cost)}</div></div>`;
       const btn = document.createElement('button');
       btn.className = 'btn';
       btn.textContent = 'Hire';
@@ -445,7 +444,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const cost = price(p.baseCost, p.level);
       const btn = el.querySelector('button');
       btn.disabled = state.points < cost;
-      el.querySelector('.note').textContent = `+${p.basePps.toFixed(2)} PPS each • Owned: ${p.level} • Cost: ${fmt(cost)}`;
+      el.querySelector('.note').textContent = `+${p.basePps.toFixed(2)} $/s each • Owned: ${p.level} • Cost: ${fmt(cost)}`;
     });
   }
 
@@ -486,7 +485,7 @@ window.addEventListener('DOMContentLoaded', () => {
       chooser.style.marginTop = '12px';
       chooser.innerHTML = `<div class="small">Nice! Pick your reward:</div>`;
       const row = document.createElement('div'); row.className='row'; row.style.marginTop='8px';
-      const r1 = document.createElement('button'); r1.className='btn gold'; r1.textContent = '2× PPC for 60s';
+      const r1 = document.createElement('button'); r1.className='btn gold'; r1.textContent = '2× $/Click for 60s';
       const r2 = document.createElement('button'); r2.className='btn accent'; r2.textContent = 'Free cheapest upgrade';
       r1.addEventListener('click', ()=>{ startBoost(60); quizModal.close(); });
       r2.addEventListener('click', ()=>{ grantFreeUpgrade(); quizModal.close(); });
@@ -554,7 +553,7 @@ window.addEventListener('DOMContentLoaded', () => {
   // About modal close (button inside)
   $$('[data-close-about]').forEach(b=> b.addEventListener('click', ()=> aboutModal.close()));
 
-  // Save/Reset
+  // Save (no reset button anymore)
   saveBtn.addEventListener('click', ()=>{
     save();
     const t = document.createElement('span');
@@ -569,12 +568,6 @@ window.addEventListener('DOMContentLoaded', () => {
     saveBtn.disabled = true;
     saveBtn.title = 'Saving disabled on this origin.';
   }
-  $('#resetBtn').addEventListener('click', ()=>{
-    if(confirm('Hard reset your progress?')){
-      localStorage.removeItem('apush5-save');
-      location.reload();
-    }
-  });
 
   // --- Boot ---
   load();
