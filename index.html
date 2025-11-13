@@ -6,7 +6,7 @@
   <title>APUSH Unit 5 Clicker</title>
   <style>
     :root{
-      --bg:#0b1220; /* deep navy */
+      --bg:#0b1220;
       --card:#111a2e;
       --muted:#a9b5d9;
       --text:#eef1fb;
@@ -16,6 +16,9 @@
       --gold:#ffd166;
       --shadow:0 10px 30px rgba(0,0,0,.35);
       --radius:18px;
+      --target-size:56px;     /* size of the moving target */
+      --target-pad:10px;      /* padding from container edges */
+      --move-ms:260ms;        /* animation time for target */
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -36,15 +39,45 @@
     .card .head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.06)}
     .card .body{padding:16px}
 
-    .big-btn{
-      width:100%; aspect-ratio:1/1; border:none; border-radius:24px; background:
+    /* Click Area (square) */
+    .click-area{
+      position:relative;
+      width:100%;
+      aspect-ratio:1/1;
+      border:none; border-radius:24px;
+      background:
         radial-gradient(200px 200px at 30% 25%, rgba(255,255,255,.12), rgba(255,255,255,0) 60%),
         linear-gradient(180deg, #1a2a53, #121d3a);
-      color:#fff; font-weight:800; font-size:22px; letter-spacing:.3px; cursor:pointer; box-shadow:0 20px 60px rgba(0,0,0,.5), inset 0 0 0 2px rgba(255,255,255,.06);
-      transition: transform .06s ease, filter .2s ease;
+      box-shadow:0 20px 60px rgba(0,0,0,.5), inset 0 0 0 2px rgba(255,255,255,.06);
+      overflow:hidden;
     }
-    .big-btn:hover{filter:brightness(1.05)}
-    .big-btn:active{transform: translateY(2px) scale(.995)}
+
+    /* Moving Target */
+    .target{
+      position:absolute;
+      width:var(--target-size);
+      height:var(--target-size);
+      border-radius:999px;
+      border:2px solid rgba(255,255,255,.22);
+      background: radial-gradient(120% 120% at 30% 25%, rgba(255,255,255,.35), rgba(255,255,255,.12) 40%, rgba(255,255,255,.04) 65%),
+                  linear-gradient(180deg, #7aa2ff, #4f7ef0);
+      color:#0b1124;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:900;
+      cursor:pointer;
+      user-select:none;
+      transition: left var(--move-ms) cubic-bezier(.2,.8,.2,1),
+                  top  var(--move-ms) cubic-bezier(.2,.8,.2,1),
+                  transform .06s ease, filter .15s ease;
+      box-shadow: 0 10px 28px rgba(0,0,0,.45);
+    }
+    .target:hover{filter:brightness(1.05)}
+    .target:active{transform: translateY(1px) scale(.98)}
+    .target:focus-visible{outline:3px solid var(--gold); outline-offset:2px}
+
+    @media (prefers-reduced-motion: reduce){
+      .target{transition:none}
+    }
 
     .row{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
     .pill{
@@ -115,8 +148,12 @@
           <div class="pill" title="Prestige level"><span>✨ Prestige:</span><strong id="prestige">0 (×1)</strong></div>
         </div></div>
         <div class="body">
-          <button id="clickBtn" class="big-btn" aria-labelledby="clickerLabel">Click for $</button>
-          <p id="clickerLabel" class="muted" style="margin-top:12px">Base $/Click grows with upgrades. Progression is intentionally <em>slow</em>—use quiz boosts wisely.</p>
+          <!-- The square container -->
+          <div id="clickArea" class="click-area" aria-labelledby="clickerLabel">
+            <!-- The moving circular target -->
+            <button id="targetBtn" type="button" class="target" aria-label="Click for money">$</button>
+          </div>
+          <p id="clickerLabel" class="muted" style="margin-top:12px">Click the moving target to earn money. It hops to a new spot after each click.</p>
 
           <div class="row" style="margin-top:12px">
             <button id="boostBtn" class="btn gold" title="Answer a Unit 5 question for a reward">🎁 Quiz Boost</button>
@@ -187,7 +224,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const $ = sel => document.querySelector(sel);
   const $$ = sel => document.querySelectorAll(sel);
 
-  // Robust storage detection (about:blank/data/blob origins may block localStorage)
+  /* ---------- storage detection ---------- */
   function storageAvailable(){
     try{
       const t='__apush5__';
@@ -198,7 +235,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   const STORAGE_OK = storageAvailable();
 
-  // --- Game State ---
+  /* ---------- state ---------- */
   const state = {
     points: 0,
     basePpc: 1,
@@ -213,21 +250,18 @@ window.addEventListener('DOMContentLoaded', () => {
     endless: false,
   };
 
-  // --- Content: Upgrades & Producers (steep, slow progression) ---
+  /* ---------- content ---------- */
   const UPGRADE_DATA = [
     { id:'ppc-core', name:'PPC Upgrade', desc:'+1 $/Click', ppc:+1, baseCost: 50 },
   ];
   const PRODUCER_DATA = [
     { id:'pamphleteers', name:'Abolitionist Pamphleteers', basePps: 0.05, baseCost: 200 },
     { id:'republican-clubs', name:'Republican Clubs', basePps: 0.2, baseCost: 1500 },
-    { id:"freedmens-bureau", name:"Freedmen's Bureau", basePps: 0.8, baseCost: 8000 },
+    { id:'freedmens-bureau', name:"Freedmen's Bureau", basePps: 0.8, baseCost: 8000 },
     { id:'rr-tycoons', name:'Railroad Tycoons', basePps: 3.2, baseCost: 40000 },
   ];
-
-  // Price curve (applies to all items)
   const price = (base, n) => Math.floor(base * Math.pow(1.55, n));
 
-  // --- Quiz Bank (APUSH Unit 5: 1844–1877) ---
   const QUIZ = [
     {q:'What concept justified U.S. expansion to the Pacific?', c:['Containment','Manifest Destiny','Isolationism','Popular Sovereignty'], a:1},
     {q:'Which war was sparked in part by the annexation of Texas?', c:['Spanish-American War','War of 1812','Mexican–American War','Civil War'], a:2},
@@ -257,7 +291,7 @@ window.addEventListener('DOMContentLoaded', () => {
     {q:'Scalawags were...', c:['Southern-born white Republicans during Reconstruction','Northern carpetbaggers','Union deserters','freedpeople in office'], a:0},
   ];
 
-  // --- Persistence ---
+  /* ---------- persistence ---------- */
   const save = () => {
     if(!STORAGE_OK) return;
     try{
@@ -290,7 +324,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // --- Setup ---
+  /* ---------- DOM refs ---------- */
   const moneyEl = $('#currency');
   const ppcEl = $('#ppc');
   const ppsEl = $('#pps');
@@ -299,7 +333,9 @@ window.addEventListener('DOMContentLoaded', () => {
   const progressBar = $('#progressBar');
   const nextGoalEl = $('#nextGoal');
 
-  const clickBtn = $('#clickBtn');
+  const clickArea = $('#clickArea');
+  const targetBtn = $('#targetBtn');
+
   const boostBtn = $('#boostBtn');
   const prestigeBtn = $('#prestigeBtn');
   const saveBtn = $('#saveBtn');
@@ -311,7 +347,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const quizModal = $('#quizModal');
   const aboutModal = $('#aboutModal');
 
-  // Create instances
+  /* ---------- init content ---------- */
   function initContent(){
     if(!state.upgrades.length){
       state.upgrades = UPGRADE_DATA.map(u => ({...u, level:0}));
@@ -321,9 +357,8 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Render helpers
+  /* ---------- helpers ---------- */
   function fmt(n){
-    // prefix with $ and compact units
     if(n >= 1e9) return '$' + (n/1e9).toFixed(2) + 'B';
     if(n >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
     if(n >= 1e3) return '$' + (n/1e3).toFixed(2) + 'k';
@@ -333,8 +368,8 @@ window.addEventListener('DOMContentLoaded', () => {
   function updateHUD(){
     const ppc = state.basePpc * state.ppcMult;
     moneyEl.textContent = fmt(state.points);
-    ppcEl.textContent = fmt(ppc);              // shows like $12
-    ppsEl.textContent = '$' + state.pps.toFixed(2); // $/s
+    ppcEl.textContent = fmt(ppc);
+    ppsEl.textContent = '$' + state.pps.toFixed(2);
     multEl.textContent = state.ppcMult.toFixed(1)+'×';
     prestigeEl.textContent = `${state.prestige} (×${state.prestige+1})`;
     const prog = Math.max(0, Math.min(1, state.points / state.goal));
@@ -344,7 +379,7 @@ window.addEventListener('DOMContentLoaded', () => {
       : `Goal: Reach ${fmt(state.goal)}`;
   }
 
-  // Render upgrade cards
+  /* ---------- upgrades / producers ---------- */
   function renderUpgrades(){
     upgradeList.innerHTML = '';
     state.upgrades.forEach(u => {
@@ -368,8 +403,6 @@ window.addEventListener('DOMContentLoaded', () => {
       upgradeList.appendChild(el);
     });
   }
-
-  // Render producers
   function recomputePPS(){
     state.pps = 0;
     state.producers.forEach(p => { state.pps += p.basePps * p.level; });
@@ -399,7 +432,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Goal / Endless helpers ---
+  /* ---------- goal / endless ---------- */
   function checkGoal(){
     if(state.points >= state.goal){
       if(state.goal >= 100000000){
@@ -410,14 +443,30 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- Game Loop ---
+  /* ---------- moving target logic ---------- */
+  function moveTargetRandom(){
+    const area = clickArea.getBoundingClientRect();
+    const size = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--target-size')) || 56;
+    const pad  = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--target-pad')) || 10;
+    const maxX = area.width - size - pad;
+    const maxY = area.height - size - pad;
+    const x = pad + Math.random() * Math.max(0, maxX);
+    const y = pad + Math.random() * Math.max(0, maxY);
+    targetBtn.style.left = x + 'px';
+    targetBtn.style.top  = y + 'px';
+  }
+
+  // initial placement & on resize
+  const ro = new ResizeObserver(() => moveTargetRandom());
+  ro.observe(clickArea);
+
+  /* ---------- game loop ---------- */
   function tick(){
     const now = Date.now();
-    const dt = Math.min(1, (now - state.lastTick)/1000); // clamp for tab switches
+    const dt = Math.min(1, (now - state.lastTick)/1000);
     state.lastTick = now;
     state.points += state.pps * dt * (state.prestige + 1);
 
-    // handle boost timer
     if(state.boostEndsAt > 0){
       const remaining = Math.max(0, Math.ceil((state.boostEndsAt - now)/1000));
       boostTimer.textContent = remaining ? (remaining + 's') : '—';
@@ -431,7 +480,6 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderAffordability(){
-    // Re-evaluate affordances without rebuilding DOM
     $$('#upgradeList .item').forEach((el, i)=>{
       const u = state.upgrades[i];
       const cost = price(u.baseCost, u.level);
@@ -448,15 +496,24 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Interactions ---
-  clickBtn.addEventListener('click', () => {
+  /* ---------- interactions ---------- */
+  // Clicking the small moving target gives money and moves the target
+  targetBtn.addEventListener('click', () => {
     const gain = state.basePpc * state.ppcMult * (state.prestige + 1);
     state.points += gain;
     checkGoal();
     updateHUD(); renderAffordability();
+    moveTargetRandom();
+  });
+  // Keyboard support: Space/Enter activates target and moves it
+  targetBtn.addEventListener('keydown', (e) => {
+    if(e.key === ' ' || e.key === 'Enter'){
+      e.preventDefault();
+      targetBtn.click();
+    }
   });
 
-  // Boost flow: answer question → choose reward
+  // Quiz flow
   let currentQ = null;
   function pickQuestion(){
     currentQ = QUIZ[Math.floor(Math.random()*QUIZ.length)];
@@ -475,12 +532,10 @@ window.addEventListener('DOMContentLoaded', () => {
       box.appendChild(div);
     });
   }
-
   function handleAnswer(idx, el){
     const correct = idx === currentQ.a;
     if(correct){
       el.classList.add('correct');
-      // Offer reward choice
       const chooser = document.createElement('div');
       chooser.style.marginTop = '12px';
       chooser.innerHTML = `<div class="small">Nice! Pick your reward:</div>`;
@@ -491,11 +546,9 @@ window.addEventListener('DOMContentLoaded', () => {
       r2.addEventListener('click', ()=>{ grantFreeUpgrade(); quizModal.close(); });
       row.appendChild(r1); row.appendChild(r2); chooser.appendChild(row);
       $('#qChoices').appendChild(chooser);
-      // prevent multiple rewards
       $$('#qChoices .choice').forEach(b=> b.disabled=true);
     }else{
       el.classList.add('wrong');
-      // lock out this question
       $$('#qChoices .choice').forEach(b=> b.disabled=true);
       const msg = document.createElement('div');
       msg.className='small muted'; msg.style.marginTop='8px';
@@ -503,16 +556,13 @@ window.addEventListener('DOMContentLoaded', () => {
       $('#qChoices').appendChild(msg);
     }
   }
-
   function startBoost(seconds){
     state.ppcMult = 2;
     state.boostEndsAt = Date.now() + seconds*1000;
     boostTimer.textContent = seconds+'s';
     updateHUD();
   }
-
   function grantFreeUpgrade(){
-    // find the cheapest upgrade by current cost
     const withCost = state.upgrades.map(u=>({u, cost: price(u.baseCost, u.level)}));
     withCost.sort((a,b)=> a.cost - b.cost);
     const chosen = withCost[0].u;
@@ -526,13 +576,12 @@ window.addEventListener('DOMContentLoaded', () => {
   $('#closeQuiz').addEventListener('click', ()=> quizModal.close());
   $('#rerollBtn').addEventListener('click', pickQuestion);
 
-  // Prestige system
+  // Prestige
   function canPrestige(){ return state.points >= 100000000 || state.endless; }
   function doPrestige(){
     if(!canPrestige()) return;
     if(!confirm('Prestige? Reset progress for a permanent +1× currency multiplier.')) return;
     state.prestige = (state.prestige||0) + 1;
-    // hard reset progress
     state.points = 0;
     state.basePpc = 1;
     state.ppcMult = 1;
@@ -547,13 +596,11 @@ window.addEventListener('DOMContentLoaded', () => {
     renderProducers();
     updateHUD();
     save();
+    moveTargetRandom(); // re-place target so it doesn't stay in same spot
   }
   prestigeBtn.addEventListener('click', doPrestige);
 
-  // About modal close (button inside)
-  $$('[data-close-about]').forEach(b=> b.addEventListener('click', ()=> aboutModal.close()));
-
-  // Save (no reset button anymore)
+  // Save
   saveBtn.addEventListener('click', ()=>{
     save();
     const t = document.createElement('span');
@@ -569,15 +616,15 @@ window.addEventListener('DOMContentLoaded', () => {
     saveBtn.title = 'Saving disabled on this origin.';
   }
 
-  // --- Boot ---
+  /* ---------- boot ---------- */
   load();
   initContent();
   recomputePPS();
   renderUpgrades();
   renderProducers();
   updateHUD();
+  moveTargetRandom();
 
-  // Autosave only when storage is available
   if(STORAGE_OK){
     setInterval(save, 15000);
     window.addEventListener('beforeunload', save);
