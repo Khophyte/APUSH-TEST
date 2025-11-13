@@ -27,14 +27,12 @@
     .card .head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
     .card .body{padding:16px}
 
-    /* Click Area */
     .click-area{position:relative;width:100%;aspect-ratio:1/1;border-radius:24px;
       background:radial-gradient(200px 200px at 30% 25%, rgba(255,255,255,.12), transparent 60%),
                  linear-gradient(180deg,#1a2a53,#121d3a);
       box-shadow:0 20px 60px rgba(0,0,0,.5), inset 0 0 0 2px rgba(255,255,255,.06);
       overflow:hidden}
 
-    /* Moving Target (no halo) */
     .target{position:absolute;width:var(--target-size);height:var(--target-size);border-radius:50%;
       background:
         radial-gradient(140% 140% at 30% 25%,
@@ -66,13 +64,11 @@
     .money{font-size:24px;font-weight:900}
     .small{font-size:12px;color:var(--muted)}
 
-    /* Dialogs */
     dialog{border:none;border-radius:18px;width:min(560px,92%);background:var(--card);color:var(--text);box-shadow:var(--shadow)}
     dialog::backdrop{background:rgba(5,10,20,.6)}
     .modal-head{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center}
     .modal-body{padding:16px}
 
-    /* Choices – higher contrast */
     .choices{display:grid;gap:10px;margin-top:10px}
     .choice{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);
       padding:10px 12px;border-radius:12px;cursor:pointer;color:var(--text);
@@ -130,7 +126,6 @@
   </div>
 </div>
 
-<!-- Quiz modal -->
 <dialog id="quizModal" aria-labelledby="quizTitle" aria-describedby="quizDesc">
   <div class="modal-head">
     <strong id="quizTitle">Answer a Unit 5 question</strong>
@@ -151,11 +146,9 @@ window.addEventListener('DOMContentLoaded', () => {
   const $ = s => document.querySelector(s);
   const $$ = s => document.querySelectorAll(s);
 
-  /* -------- Storage detection -------- */
   const STORAGE_OK = (()=>{ try{ const t='__apush5__'; localStorage.setItem(t,'1'); localStorage.removeItem(t); return true; }catch(_){ return false; } })();
 
-  /* -------- State -------- */
-  const BASE_TARGET_SIZE = 56; // px (matches CSS var default)
+  const BASE_TARGET_SIZE = 56; // px
   const state = {
     points: 0, basePpc: 1, ppcMult: 1, pps: 0,
     goal: 100000000, prestige: 0, endless: false,
@@ -163,55 +156,27 @@ window.addEventListener('DOMContentLoaded', () => {
     boostEndsAt: 0, lastTick: performance.now()
   };
 
-  /* -------- Pricing helpers -------- */
+  /* ---------- Pricing ---------- */
   const pow = Math.pow;
-  const priceScale = (base, n, r) => Math.floor(base * pow(r, n)); // generic geometric
-
-  // PPC special cost function:
-  // level 0..3: base * 1.55^level; level 4 (buying final): 4x previous cost
   function ppcCost(level){
     const base = 50;
     if(level <= 3) return Math.floor(base * pow(1.55, level));
-    if(level === 4){
-      const prev = Math.floor(base * pow(1.55, 3));
-      return prev * 4;
-    }
-    return Infinity; // maxed
+    if(level === 4){ const prev = Math.floor(base * pow(1.55, 3)); return prev * 4; }
+    return Infinity;
   }
+  function sizeCost(level){ const base = 350; return Math.floor(base * pow(2.1, level)); }
+  function priceProducer(base, n){ return Math.floor(base * Math.pow(1.55, n)); }
 
-  // Target Size upgrade cost: base 350 (≈7x PPC base), ×2.1 each level
-  function sizeCost(level){
-    const base = 350;
-    return Math.floor(base * pow(2.1, level));
-  }
-
-  /* -------- Data -------- */
-  // Two upgrades: PPC (max 5), Target Size (max 10)
+  /* ---------- Catalogs ---------- */
   const UPGRADE_DATA = [
-    {
-      id:'ppc',
-      name:'PPC Upgrade',
-      desc:'+1 $/Click (final jumps to $10)',
-      type:'ppc',
-      max:5,
-      costFn: ppcCost
-    },
-    {
-      id:'size',
-      name:'Target Size',
-      desc:'+10% button size',
-      type:'size',
-      max:10,
-      costFn: sizeCost
-    }
+    { id:'ppc',  name:'PPC Upgrade',   desc:'+1 $/Click (final jumps to $10)', type:'ppc',  max:5,  costFn: ppcCost },
+    { id:'size', name:'Target Size',   desc:'+10% button size',                type:'size', max:10, costFn: sizeCost }
   ];
-
   const PRODUCER_DATA = [
-    { id:'pamphleteers', name:'Abolitionist Pamphleteers', basePps:0.05, baseCost:200 },
-    { id:'republican-clubs', name:'Republican Clubs', basePps:0.2, baseCost:1500 }
+    { id:'pamphleteers',   name:'Abolitionist Pamphleteers', basePps:0.05, baseCost:200 },
+    { id:'republican-clubs', name:'Republican Clubs',        basePps:0.2,  baseCost:1500 }
   ];
 
-  // APUSH Unit 5 (sample; add more anytime)
   const QUIZ = [
     {q:'What concept justified U.S. expansion to the Pacific?', c:['Containment','Manifest Destiny','Isolationism','Popular Sovereignty'], a:1},
     {q:'Which war was sparked in part by the annexation of Texas?', c:['Spanish-American War','War of 1812','Mexican–American War','Civil War'], a:2},
@@ -220,21 +185,31 @@ window.addEventListener('DOMContentLoaded', () => {
     {q:'The Compromise of 1877 resulted in...', c:['renewed Radical Reconstruction','federal troops withdrawn from the South','immediate Black suffrage','annexation of Cuba'], a:1},
   ];
 
-  /* -------- Persistence -------- */
-  function save(){
-    if(!STORAGE_OK) return;
-    try{ localStorage.setItem('apush5-save', JSON.stringify(state)); }catch(e){ console.warn('save failed', e); }
-  }
+  /* ---------- Persistence ---------- */
+  function save(){ if(!STORAGE_OK) return; try{ localStorage.setItem('apush5-save', JSON.stringify(state)); }catch(e){ console.warn('save failed', e); } }
   function load(){
     if(!STORAGE_OK) return;
     const raw = localStorage.getItem('apush5-save'); if(!raw) return;
-    try{
-      const d = JSON.parse(raw);
-      Object.assign(state, d);
-    }catch(e){ console.warn('load failed', e); }
+    try{ Object.assign(state, JSON.parse(raw)); }catch(e){ console.warn('load failed', e); }
   }
 
-  /* -------- DOM -------- */
+  /* ---------- Migration (adds new upgrades/producers to old saves) ---------- */
+  function migrate(){
+    // Upgrades: ensure every catalog item exists; keep existing levels
+    const byId = Object.fromEntries((state.upgrades||[]).map(u=>[u.id,u]));
+    const merged = UPGRADE_DATA.map(def => byId[def.id] ? {...def, ...byId[def.id]} : {...def, level:0});
+    state.upgrades = merged;
+
+    // Producers: same pattern
+    const pById = Object.fromEntries((state.producers||[]).map(p=>[p.id,p]));
+    const pMerged = PRODUCER_DATA.map(def => pById[def.id] ? {...def, ...pById[def.id]} : {...def, level:0});
+    state.producers = pMerged;
+
+    // Apply size if present in save
+    applyTargetSizeFromLevel();
+  }
+
+  /* ---------- DOM ---------- */
   const moneyEl=$('#currency'), ppcEl=$('#ppc'), ppsEl=$('#pps'), multEl=$('#mult'), prestigeEl=$('#prestige');
   const progressBar=$('#progressBar'), nextGoalEl=$('#nextGoal'), boostTimer=$('#boostTimer strong');
   const upgradeList=$('#upgradeList'), producerList=$('#producerList');
@@ -245,19 +220,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const saveBtn=$('#saveBtn'), prestigeBtn=$('#prestigeBtn');
 
-  /* -------- Init content -------- */
+  /* ---------- Init content ---------- */
   function initContent(){
-    if(!state.upgrades.length){
-      state.upgrades = UPGRADE_DATA.map(u=>({...u, level:0}));
-    }
-    if(!state.producers.length){
-      state.producers = PRODUCER_DATA.map(p=>({...p, level:0}));
-    }
-    // Apply target size from saved level
+    if(!state.upgrades.length)  state.upgrades  = UPGRADE_DATA.map(u=>({...u, level:0}));
+    if(!state.producers.length) state.producers = PRODUCER_DATA.map(p=>({...p, level:0}));
     applyTargetSizeFromLevel();
   }
 
-  /* -------- HUD -------- */
+  /* ---------- HUD ---------- */
   function fmt(n){ if(n>=1e9) return '$'+(n/1e9).toFixed(2)+'B';
                    if(n>=1e6) return '$'+(n/1e6).toFixed(2)+'M';
                    if(n>=1e3) return '$'+(n/1e3).toFixed(2)+'k';
@@ -276,36 +246,26 @@ window.addEventListener('DOMContentLoaded', () => {
       : `Goal: Reach ${fmt(state.goal)}`;
   }
 
-  /* -------- Upgrades -------- */
-  function upgradeCost(u){
-    if(u.type === 'ppc') return ppcCost(u.level);
-    if(u.type === 'size') return sizeCost(u.level);
-    return Infinity;
-  }
+  /* ---------- Upgrades ---------- */
+  function upgradeCost(u){ return u.type==='ppc' ? ppcCost(u.level) : u.type==='size' ? sizeCost(u.level) : Infinity; }
 
   function applyTargetSizeFromLevel(){
-    const sizeU = state.upgrades.find(x=>x.id==='size');
-    const factor = 1 + 0.10 * (sizeU?.level || 0); // +10% per level
+    const u = (state.upgrades||[]).find(x=>x.id==='size');
+    const lvl = u?.level || 0;
+    const factor = 1 + 0.10 * lvl; // +10% per level
     const px = Math.round(BASE_TARGET_SIZE * factor);
     document.documentElement.style.setProperty('--target-size', px+'px');
   }
 
   function buyUpgrade(u){
     if(u.level >= u.max) return;
-
-    // Compute cost & effects
     const cost = upgradeCost(u);
     if(state.points < cost) return;
-
     state.points -= cost;
 
     if(u.type === 'ppc'){
-      // Levels 1-4: +1 each; Level 5: jump to $10 total base
       if(u.level < 4){ state.basePpc += 1; }
-      else if(u.level === 4){
-        // Before buying final, PPC from base is 1 + 4 = 5; raise to 10 (+5)
-        state.basePpc += 5;
-      }
+      else if(u.level === 4){ state.basePpc += 5; } // jump to $10
       u.level++;
     } else if(u.type === 'size'){
       u.level++;
@@ -320,18 +280,14 @@ window.addEventListener('DOMContentLoaded', () => {
     state.upgrades.forEach(u=>{
       const atMax = u.level >= u.max;
       const cost = upgradeCost(u);
-      let details = '';
-      if(u.type === 'ppc'){
-        const nextLabel = u.level < 4 ? '+1 $/Click' : (u.level === 4 ? 'Jump to $10/Click' : 'Max');
-        details = `${nextLabel} • Owned: ${u.level}/${u.max} • ${atMax ? 'MAX' : 'Cost: '+fmt(cost)}`;
-      }else if(u.type === 'size'){
-        const nextLabel = u.level < u.max ? '+10% size' : 'Max';
-        details = `${nextLabel} • Owned: ${u.level}/${u.max} • ${atMax ? 'MAX' : 'Cost: '+fmt(cost)}`;
-      }
+      let nextLabel;
+      if(u.type==='ppc') nextLabel = u.level < 4 ? '+1 $/Click' : (u.level===4 ? 'Jump to $10/Click' : 'Max');
+      else nextLabel = u.level < u.max ? '+10% size' : 'Max';
 
       const div = document.createElement('div');
       div.className='item';
-      div.innerHTML = `<div class="meta"><div class="title">${u.name}</div><div class="note">${details}</div></div>`;
+      div.innerHTML = `<div class="meta"><div class="title">${u.name}</div>
+        <div class="note">${nextLabel} • Owned: ${u.level}/${u.max} • ${atMax ? 'MAX' : 'Cost: '+fmt(cost)}</div></div>`;
 
       const btn = document.createElement('button');
       btn.className='btn accent';
@@ -344,8 +300,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* -------- Producers -------- */
-  function priceProducer(base, n){ return Math.floor(base * Math.pow(1.55, n)); }
+  /* ---------- Producers ---------- */
   function recomputePPS(){ state.pps = state.producers.reduce((s,p)=>s + p.basePps*p.level, 0); }
   function renderProducers(){
     producerList.innerHTML='';
@@ -367,25 +322,20 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   function refreshAffordability(){
-    // upgrades
     $$('#upgradeList .item').forEach((el,i)=>{
       const u = state.upgrades[i];
       const atMax = u.level >= u.max;
       const c = upgradeCost(u);
       const note = el.querySelector('.note');
-      if(u.type==='ppc'){
-        const nextLabel = u.level < 4 ? '+1 $/Click' : (u.level === 4 ? 'Jump to $10/Click' : 'Max');
-        note.textContent = `${nextLabel} • Owned: ${u.level}/${u.max} • ${atMax ? 'MAX' : 'Cost: '+fmt(c)}`;
-      }else{
-        const nextLabel = u.level < u.max ? '+10% size' : 'Max';
-        note.textContent = `${nextLabel} • Owned: ${u.level}/${u.max} • ${atMax ? 'MAX' : 'Cost: '+fmt(c)}`;
-      }
+      const nextLabel = (u.type==='ppc')
+        ? (u.level < 4 ? '+1 $/Click' : (u.level===4 ? 'Jump to $10/Click' : 'Max'))
+        : (u.level < u.max ? '+10% size' : 'Max');
+      note.textContent = `${nextLabel} • Owned: ${u.level}/${u.max} • ${atMax ? 'MAX' : 'Cost: '+fmt(c)}`;
       const btn = el.querySelector('button');
       btn.textContent = atMax ? 'Maxed' : 'Buy';
       btn.disabled = atMax || state.points < c;
     });
 
-    // producers
     $$('#producerList .item').forEach((el,i)=>{
       const p = state.producers[i];
       const c = priceProducer(p.baseCost, p.level);
@@ -394,7 +344,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* -------- Goal / Endless -------- */
+  /* ---------- Goal / Endless ---------- */
   function checkGoal(){
     if(state.points >= state.goal){
       if(state.goal >= 100000000){ state.endless = true; }
@@ -402,22 +352,24 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  /* -------- Moving target -------- */
+  /* ---------- Moving target ---------- */
   function moveTarget(){
-    const a = clickArea.getBoundingClientRect(), s = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--target-size')) || BASE_TARGET_SIZE, p = 10;
+    const a = clickArea.getBoundingClientRect();
+    const s = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--target-size')) || BASE_TARGET_SIZE;
+    const p = 10;
     const x = p + Math.random() * Math.max(0, a.width  - s - p);
     const y = p + Math.random() * Math.max(0, a.height - s - p);
     targetBtn.style.left = x + 'px'; targetBtn.style.top = y + 'px';
   }
   new ResizeObserver(()=>moveTarget()).observe(clickArea);
 
-  targetBtn.addEventListener('click', (e)=>{
+  targetBtn.addEventListener('click', ()=>{
     const gain = state.basePpc * state.ppcMult * (state.prestige + 1);
     state.points += gain; checkGoal(); updateHUD(); refreshAffordability(); moveTarget(); save();
   });
   targetBtn.addEventListener('keydown', (e)=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); targetBtn.click(); }});
 
-  /* -------- Quiz System (with rewards) -------- */
+  /* ---------- Quiz (with rewards) ---------- */
   let currentQ = null, rewarded = false;
 
   function pickQuestion(){
@@ -439,8 +391,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const correct = idx === currentQ.a;
     $$('.choice').forEach(b=> b.disabled=true);
     if(correct){
-      el.classList.add('correct'); showRewardChooser();
-      rewarded = true;
+      el.classList.add('correct'); showRewardChooser(); rewarded = true;
     }else{
       el.classList.add('wrong');
       const msg = document.createElement('div');
@@ -469,14 +420,12 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   function grantFreeUpgrade(){
-    // choose the cheapest non-maxed upgrade
     const candidates = state.upgrades
       .filter(u=> u.level < u.max)
       .map(u=> ({u, cost: upgradeCost(u)}))
       .sort((a,b)=> a.cost - b.cost);
-    if(!candidates.length){ return; }
+    if(!candidates.length) return;
     const chosen = candidates[0].u;
-    // give it for free
     if(chosen.type === 'ppc'){
       if(chosen.level < 4){ state.basePpc += 1; }
       else if(chosen.level === 4){ state.basePpc += 5; }
@@ -492,7 +441,7 @@ window.addEventListener('DOMContentLoaded', () => {
   $('#closeQuiz').addEventListener('click', ()=> $('#quizModal').close());
   $('#rerollBtn').addEventListener('click', pickQuestion);
 
-  /* -------- Prestige -------- */
+  /* ---------- Prestige ---------- */
   function canPrestige(){ return state.points >= 100000000 || state.endless; }
   function doPrestige(){
     if(!canPrestige()) return;
@@ -500,31 +449,25 @@ window.addEventListener('DOMContentLoaded', () => {
     state.prestige = (state.prestige||0) + 1;
     state.points=0; state.basePpc=1; state.ppcMult=1; state.pps=0;
     state.boostEndsAt=0; state.endless=false; state.goal=100000000;
-    state.upgrades.forEach(u=>u.level=0); // reset upgrades
+    state.upgrades.forEach(u=>u.level=0);
     state.producers.forEach(p=>p.level=0);
-    applyTargetSizeFromLevel(); // reset visual size
+    applyTargetSizeFromLevel();
     recomputePPS(); renderUpgrades(); renderProducers(); updateHUD(); moveTarget(); save();
   }
   $('#prestigeBtn').addEventListener('click', doPrestige);
 
-  /* -------- Save button -------- */
-  $('#saveBtn').addEventListener('click', ()=>{
-    save();
-    const t=document.createElement('span'); t.textContent=' Saved! '; t.className='pill';
-    t.style.marginLeft='8px'; t.style.opacity='0.9'; $('#saveBtn').after(t); setTimeout(()=>t.remove(),1200);
-  });
-  if(!STORAGE_OK){ $('#saveBtn').disabled=true; $('#saveBtn').title='Saving disabled on this origin.'; }
+  /* ---------- Loop & save ---------- */
+  function recomputePPS(){ state.pps = state.producers.reduce((s,p)=>s + p.basePps*p.level, 0); }
+  function renderProducers(){ /* filled above */ } // defined earlier
+  const _renderProducers = renderProducers; // keep reference
 
-  /* -------- Producers loop & Boost timer -------- */
   function tick(){
     const now = performance.now();
     const dt = Math.min(1, (now - state.lastTick)/1000);
     state.lastTick = now;
 
-    // Passive $
     state.points += state.pps * dt * (state.prestige + 1);
 
-    // Boost timer
     if(state.boostEndsAt > 0){
       const remaining = Math.max(0, Math.ceil((state.boostEndsAt - now)/1000));
       $('#boostTimer strong').textContent = remaining ? (remaining+'s') : '—';
@@ -535,10 +478,20 @@ window.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(tick);
   }
 
-  /* -------- Boot -------- */
-  load(); initContent(); recomputePPS();
-  renderUpgrades(); renderProducers(); updateHUD(); moveTarget();
-  if(STORAGE_OK){ setInterval(save,15000); window.addEventListener('beforeunload', save); document.addEventListener('visibilitychange', ()=>{ if(document.hidden) save(); }); }
+  /* ---------- Boot ---------- */
+  load();           // 1) load old save
+  initContent();    // 2) ensure arrays exist
+  migrate();        // 3) merge in any new upgrades/producers
+  recomputePPS();
+  renderUpgrades();
+  _renderProducers(); // call the actual function
+  updateHUD(); moveTarget();
+
+  if(STORAGE_OK){
+    setInterval(save,15000);
+    window.addEventListener('beforeunload', save);
+    document.addEventListener('visibilitychange', ()=>{ if(document.hidden) save(); });
+  }
   requestAnimationFrame(tick);
 });
 </script>
