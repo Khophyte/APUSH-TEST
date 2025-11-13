@@ -20,7 +20,6 @@
       --target-pad: 10px;
       --move-ms: 260ms;
     }
-
     * { box-sizing: border-box; }
     html, body { height: 100%; }
     body {
@@ -30,7 +29,6 @@
       color: var(--text);
       font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial;
     }
-
     .wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
     header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px; }
     h1 { font-size: 28px; margin: 0; }
@@ -193,8 +191,15 @@
         </div>
       </section>
 
-      <section class="card"><div class="head"><strong>Upgrades</strong></div><div class="body"><div id="upgradeList" class="list"></div></div></section>
-      <section class="card"><div class="head"><strong>Producers</strong></div><div class="body"><div id="producerList" class="list"></div></div></section>
+      <section class="card">
+        <div class="head"><strong>Upgrades</strong></div>
+        <div class="body"><div id="upgradeList" class="list"></div></div>
+      </section>
+
+      <section class="card">
+        <div class="head"><strong>Producers</strong></div>
+        <div class="body"><div id="producerList" class="list"></div></div>
+      </section>
     </div>
 
     <footer class="small muted" style="margin-top:18px"></footer>
@@ -214,32 +219,226 @@
 
 <script>
 window.addEventListener('DOMContentLoaded', () => {
-  const $ = s => document.querySelector(s);
+  const $  = s => document.querySelector(s);
   const $$ = s => document.querySelectorAll(s);
 
-  const state = { points:0, basePpc:1, ppcMult:1, pps:0, goal:100000000, prestige:0, endless:false };
+  /* ---------- STATE ---------- */
+  const state = {
+    points: 0,
+    basePpc: 1,
+    ppcMult: 1,
+    pps: 0,
+    goal: 100000000,
+    prestige: 0,
+    endless: false,
+    upgrades: [],    // <-- needed
+    producers: []    // <-- needed
+  };
+
+  /* ---------- DATA ---------- */
   const price = (base,n)=>Math.floor(base*Math.pow(1.55,n));
+  const UPGRADE_DATA = [
+    { id:'ppc', name:'PPC Upgrade', desc:'+1 $/Click', ppc:1, baseCost:50 }
+  ];
+  const PRODUCER_DATA = [
+    { id:'pamphleteers', name:'Abolitionist Pamphleteers', basePps:0.05, baseCost:200 }
+  ];
 
-  const UPGRADE_DATA=[{id:'ppc',name:'PPC Upgrade',desc:'+1 $/Click',ppc:1,baseCost:50}];
-  const PRODUCER_DATA=[{id:'pamphleteers',name:'Abolitionist Pamphleteers',basePps:0.05,baseCost:200}];
+  /* ---------- DOM REFS ---------- */
+  const moneyEl    = $('#currency');
+  const ppcEl      = $('#ppc');
+  const ppsEl      = $('#pps');
+  const multEl     = $('#mult');
+  const prestigeEl = $('#prestige');
+  const progressEl = $('#progressBar');
+  const nextGoalEl = $('#nextGoal');
 
-  function fmt(n){if(n>=1e9)return '$'+(n/1e9).toFixed(2)+'B';if(n>=1e6)return '$'+(n/1e6).toFixed(2)+'M';if(n>=1e3)return '$'+(n/1e3).toFixed(2)+'k';return '$'+Math.floor(n);}
-  function updateHUD(){ $('#currency').textContent=fmt(state.points); $('#ppc').textContent=fmt(state.basePpc*state.ppcMult); $('#pps').textContent='$'+state.pps.toFixed(2); $('#mult').textContent=state.ppcMult.toFixed(1)+'×'; $('#prestige').textContent=`${state.prestige} (×${state.prestige+1})`; }
+  const upgradeList  = $('#upgradeList');
+  const producerList = $('#producerList');
 
-  const clickArea=$('#clickArea'),targetBtn=$('#targetBtn');
-  function moveTarget(){ const a=clickArea.getBoundingClientRect(),s=56,p=10;const x=p+Math.random()*(a.width-s-p),y=p+Math.random()*(a.height-s-p);targetBtn.style.left=x+'px';targetBtn.style.top=y+'px';}
-  const ro=new ResizeObserver(()=>moveTarget());ro.observe(clickArea);
-  targetBtn.addEventListener('click',()=>{state.points+=state.basePpc*state.ppcMult*(state.prestige+1);updateHUD();moveTarget();});
+  const clickArea = $('#clickArea');
+  const targetBtn = $('#targetBtn');
 
-  const boostBtn=$('#boostBtn'),quizModal=$('#quizModal'),qText=$('#qText'),qChoices=$('#qChoices'),closeQuiz=$('#closeQuiz'),reroll=$('#rerollBtn');
+  const boostBtn   = $('#boostBtn');
+  const quizModal  = $('#quizModal');
+  const qText      = $('#qText');
+  const qChoices   = $('#qChoices');
+  const closeQuiz  = $('#closeQuiz');
+  const reroll     = $('#rerollBtn');
+
+  /* ---------- INIT CONTENT ---------- */
+  function initContent(){
+    if(!state.upgrades.length){
+      state.upgrades = UPGRADE_DATA.map(u => ({...u, level:0}));
+    }
+    if(!state.producers.length){
+      state.producers = PRODUCER_DATA.map(p => ({...p, level:0}));
+    }
+  }
+
+  /* ---------- FORMAT / HUD ---------- */
+  function fmt(n){
+    if(n>=1e9) return '$'+(n/1e9).toFixed(2)+'B';
+    if(n>=1e6) return '$'+(n/1e6).toFixed(2)+'M';
+    if(n>=1e3) return '$'+(n/1e3).toFixed(2)+'k';
+    return '$'+Math.floor(n);
+  }
+
+  function updateHUD(){
+    moneyEl.textContent = fmt(state.points);
+    ppcEl.textContent = fmt(state.basePpc * state.ppcMult);
+    ppsEl.textContent = '$' + state.pps.toFixed(2);
+    multEl.textContent = state.ppcMult.toFixed(1)+'×';
+    prestigeEl.textContent = `${state.prestige} (×${state.prestige+1})`;
+    const prog = Math.max(0, Math.min(1, state.points / state.goal));
+    progressEl.style.width = (prog*100).toFixed(1) + '%';
+    nextGoalEl.textContent = state.endless
+      ? 'Endless mode unlocked! Keep going. Prestige for +1× permanent boost.'
+      : `Goal: Reach ${fmt(state.goal)}`;
+  }
+
+  /* ---------- RENDER: UPGRADES ---------- */
+  function renderUpgrades(){
+    upgradeList.innerHTML = '';
+    state.upgrades.forEach(u=>{
+      const n = u.level;
+      const cost = price(u.baseCost, n);
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.innerHTML = `
+        <div class="meta">
+          <div class="title">${u.name}</div>
+          <div class="note">${u.desc} • Owned: ${n} • Cost: ${fmt(cost)}</div>
+        </div>`;
+      const btn = document.createElement('button');
+      btn.className = 'btn accent';
+      btn.textContent = 'Buy';
+      btn.disabled = state.points < cost;
+      btn.addEventListener('click', ()=>{
+        if(state.points < cost) return;
+        state.points -= cost;
+        u.level++;
+        state.basePpc += u.ppc;
+        updateHUD();
+        renderUpgrades();
+      });
+      item.appendChild(btn);
+      upgradeList.appendChild(item);
+    });
+  }
+
+  /* ---------- RENDER: PRODUCERS ---------- */
+  function recomputePPS(){
+    let total = 0;
+    state.producers.forEach(p=> total += p.basePps * p.level);
+    state.pps = total;
+  }
+
+  function renderProducers(){
+    producerList.innerHTML = '';
+    state.producers.forEach(p=>{
+      const n = p.level;
+      const cost = price(p.baseCost, n);
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.innerHTML = `
+        <div class="meta">
+          <div class="title">${p.name}</div>
+          <div class="note">+${p.basePps.toFixed(2)} $/s each • Owned: ${n} • Cost: ${fmt(cost)}</div>
+        </div>`;
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.textContent = 'Hire';
+      btn.disabled = state.points < cost;
+      btn.addEventListener('click', ()=>{
+        if(state.points < cost) return;
+        state.points -= cost;
+        p.level++;
+        recomputePPS();
+        updateHUD();
+        renderProducers();
+      });
+      item.appendChild(btn);
+      producerList.appendChild(item);
+    });
+  }
+
+  /* ---------- AFFORDABILITY REFRESH ---------- */
+  function refreshAffordability(){
+    $$('#upgradeList .item').forEach((el,i)=>{
+      const u = state.upgrades[i];
+      const cost = price(u.baseCost, u.level);
+      el.querySelector('button').disabled = state.points < cost;
+      el.querySelector('.note').textContent = `${u.desc} • Owned: ${u.level} • Cost: ${fmt(cost)}`;
+    });
+    $$('#producerList .item').forEach((el,i)=>{
+      const p = state.producers[i];
+      const cost = price(p.baseCost, p.level);
+      el.querySelector('button').disabled = state.points < cost;
+      el.querySelector('.note').textContent = `+${p.basePps.toFixed(2)} $/s each • Owned: ${p.level} • Cost: ${fmt(cost)}`;
+    });
+  }
+
+  /* ---------- CLICK TARGET ---------- */
+  function moveTarget(){
+    const a = clickArea.getBoundingClientRect(), s = 56, p = 10;
+    const x = p + Math.random() * Math.max(0, a.width  - s - p);
+    const y = p + Math.random() * Math.max(0, a.height - s - p);
+    targetBtn.style.left = x + 'px';
+    targetBtn.style.top  = y + 'px';
+  }
+  const ro = new ResizeObserver(()=>moveTarget());
+  ro.observe(clickArea);
+
+  targetBtn.addEventListener('click', ()=>{
+    state.points += state.basePpc * state.ppcMult * (state.prestige + 1);
+    updateHUD();
+    refreshAffordability();
+    moveTarget();
+  });
+
+  /* ---------- QUIZ (minimal demo) ---------- */
   const QUIZ=[{q:"Lincoln's Ten Percent Plan aimed to...",c:["punish Confederates severely","require majority loyalty oaths","offer lenient readmission for states","delay readmission until 1900"],a:2}];
   let q=null;
-  function ask(){q=QUIZ[Math.floor(Math.random()*QUIZ.length)];qText.textContent=q.q;qChoices.innerHTML='';q.c.forEach((t,i)=>{const b=document.createElement('button');b.className='choice';b.innerHTML=`<span class="pill">${String.fromCharCode(65+i)}</span> ${t}`;b.onclick=()=>{if(i===q.a){b.classList.add('correct');}else{b.classList.add('wrong');}$$('.choice').forEach(x=>x.disabled=true);};qChoices.appendChild(b);});}
-  boostBtn.onclick=()=>{ask();quizModal.showModal();};
-  closeQuiz.onclick=()=>quizModal.close();
-  reroll.onclick=ask;
+  function ask(){
+    q = QUIZ[Math.floor(Math.random()*QUIZ.length)];
+    qText.textContent = q.q;
+    qChoices.innerHTML='';
+    q.c.forEach((t,i)=>{
+      const b = document.createElement('button');
+      b.className='choice';
+      b.innerHTML = `<span class="pill">${String.fromCharCode(65+i)}</span> ${t}`;
+      b.onclick = ()=>{
+        if(i===q.a){ b.classList.add('correct'); } else { b.classList.add('wrong'); }
+        $$('.choice').forEach(x=> x.disabled=true);
+      };
+      qChoices.appendChild(b);
+    });
+  }
+  boostBtn.onclick = ()=>{ ask(); quizModal.showModal(); };
+  closeQuiz.onclick = ()=> quizModal.close();
+  reroll.onclick = ask;
 
-  updateHUD(); moveTarget();
+  /* ---------- PASSIVE INCOME LOOP ---------- */
+  let last = performance.now();
+  function tick(){
+    const now = performance.now();
+    const dt = Math.min(1, (now - last)/1000);
+    last = now;
+    state.points += state.pps * dt * (state.prestige + 1);
+    updateHUD();
+    refreshAffordability();
+    requestAnimationFrame(tick);
+  }
+
+  /* ---------- BOOT ---------- */
+  initContent();
+  recomputePPS();
+  renderUpgrades();
+  renderProducers();
+  updateHUD();
+  moveTarget();
+  requestAnimationFrame(tick);
 });
 </script>
 </body>
