@@ -286,7 +286,6 @@
     try{
       const d = JSON.parse(raw);
       Object.assign(state, d);
-    }catch(e){ console.warn('save load failed', e); }
   }catch(e){ console.warn('save load failed', e); }
   }
 
@@ -552,8 +551,8 @@
   
   $$('[data-close-about]').forEach(b=> b.addEventListener('click', ()=> aboutModal.close()));
 
-  $('#saveBtn').addEventListener('click', ()=>{ save(); const t=$('<span/>'); t.textContent=' Saved! '; t.className='pill'; t.style.marginLeft='8px'; t.style.opacity='0.9'; $('#saveBtn').after(t); setTimeout(()=>t.remove(),1200); });
-  if(!STORAGE_OK && saveBtn){ saveBtn.disabled = true; saveBtn.title = 'Saving disabled on this page (about:blank/data/blob origins). Open this file via https:// or file://'; } const t=$('<span/>'); t.textContent=' Saved! '; t.className='pill'; t.style.marginLeft='8px'; t.style.opacity='0.9'; $('#saveBtn').after(t); setTimeout(()=>t.remove(),1200); });
+  $('#saveBtn').addEventListener('click', ()=>{ save(); const t=document.createElement('span'); t.textContent=' Saved! '; t.className='pill'; t.style.marginLeft='8px'; t.style.opacity='0.9'; $('#saveBtn').after(t); setTimeout(()=>t.remove(),1200); });
+  if(!STORAGE_OK && saveBtn){ saveBtn.disabled = true; saveBtn.title = 'Saving disabled on this page (about:blank/data/blob origins). Open this file via https:// or file://'; }
   $('#resetBtn').addEventListener('click', ()=>{
     if(confirm('Hard reset your progress?')){
       localStorage.removeItem('apush5-save'); location.reload();
