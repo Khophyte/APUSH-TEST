@@ -133,8 +133,9 @@
       margin-bottom:16px;
       padding:12px;
       border-radius:14px;
-      background:rgba(255,255,255,.02);
-      border:1px solid rgba(255,255,255,.08);
+      background:rgba(15,23,42,0.95);
+      border:1px solid rgba(148,163,184,0.4);
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
     }
     .producer-tier-header{
       display:flex;
@@ -147,24 +148,74 @@
     .producer-tier-header .status.unlocked{color:#a5f3fc}
     .producer-tier-header .status.locked{color:#fca5a5}
 
-    .node-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-      gap:10px;
-      align-items:stretch;
+    .tree-row{
+      position:relative;
+      padding:18px 8px 4px;
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:24px;
     }
-    .node{
-      text-align:left;
-      padding:8px;
-      border-radius:16px;
-      background:rgba(15,23,42,0.9);
-      border:1px solid rgba(148,163,184,0.35);
+    .tree-row::before{
+      content:'';
+      position:absolute;
+      top:36px;
+      left:8%;
+      right:8%;
+      height:2px;
+      background:linear-gradient(90deg,rgba(59,130,246,0.0),rgba(59,130,246,0.5),rgba(45,212,191,0.0));
+      pointer-events:none;
+    }
+
+    .tree-node{
+      position:relative;
       display:flex;
       flex-direction:column;
-      justify-content:space-between;
+      align-items:center;
+      min-width:90px;
+      max-width:120px;
+      text-align:center;
+      z-index:1;
     }
-    .node-title{font-size:13px;margin-bottom:4px}
-    .node-note{font-size:11px;color:var(--muted);margin-bottom:6px;min-height:34px}
+    .tree-node-circle{
+      width:54px;
+      height:54px;
+      border-radius:50%;
+      border:2px solid rgba(129,140,248,0.9);
+      background:
+        radial-gradient(140% 140% at 30% 25%,rgba(255,255,255,.3) 0%,rgba(255,255,255,.07) 45%,rgba(15,23,42,1) 80%),
+        linear-gradient(180deg,#1d2a4d,#020617);
+      box-shadow:0 0 0 2px rgba(15,23,42,0.9),0 0 20px rgba(56,189,248,0.45);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      transition:transform .08s ease, box-shadow .15s ease, filter .15s ease, border-color .15s ease;
+      color:#e5edff;
+      font-size:18px;
+    }
+    .tree-node-circle.unlock{
+      border-color:var(--accent-2);
+      box-shadow:0 0 0 2px rgba(15,23,42,1),0 0 26px rgba(45,212,191,0.55);
+      background:
+        radial-gradient(140% 140% at 30% 25%,rgba(255,255,255,.35) 0%,rgba(255,255,255,.1) 45%,rgba(15,23,42,1) 80%),
+        linear-gradient(180deg,#22c55e,#0f766e);
+      color:#022c22;
+    }
+    .tree-node-circle:hover{
+      transform:scale(1.05);
+      filter:brightness(1.08);
+    }
+    .tree-node-circle.locked{
+      cursor:default;
+      opacity:0.45;
+      box-shadow:0 0 0 1px rgba(15,23,42,1);
+      border-color:rgba(148,163,184,0.5);
+      filter:grayscale(.35);
+    }
+
+    .tree-node-title{font-size:12px;margin-top:6px;margin-bottom:2px}
+    .tree-node-note{font-size:11px;color:var(--muted);min-height:30px}
   </style>
 </head>
 <body>
@@ -617,8 +668,8 @@ window.addEventListener('DOMContentLoaded', () => {
       header.appendChild(status);
       tierDiv.appendChild(header);
 
-      const grid = document.createElement('div');
-      grid.className = 'node-grid';
+      const row = document.createElement('div');
+      row.className = 'tree-row';
 
       // Producer nodes
       tier.producers.forEach(p => {
@@ -626,59 +677,68 @@ window.addEventListener('DOMContentLoaded', () => {
         const cost  = priceProducer(p.baseCost, level);
 
         const node = document.createElement('div');
-        node.className = 'node';
+        node.className = 'tree-node';
         node.dataset.producerId = p.id;
         node.dataset.tierId = tier.id;
 
+        const circle = document.createElement('button');
+        circle.type = 'button';
+        circle.className = 'tree-node-circle';
+        if(!unlocked) circle.classList.add('locked');
+        circle.textContent = '⏣'; // simple icon glyph
+        circle.title = unlocked ? 'Click to hire' : 'Tier locked';
+
+        circle.addEventListener('click', () => {
+          if(!state.unlockedTiers[tier.id]) return;
+          buyProducer(p.id);
+        });
+
         const titleEl = document.createElement('div');
-        titleEl.className = 'node-title';
+        titleEl.className = 'tree-node-title';
         titleEl.textContent = p.name;
 
         const note = document.createElement('div');
-        note.className = 'node-note';
+        note.className = 'tree-node-note';
         note.textContent = `+${p.basePps.toFixed(2)} $/s • Owned: ${level} • Cost: ${fmt(cost)}`;
 
-        const btn = document.createElement('button');
-        btn.className = 'btn small-btn';
-        btn.textContent = 'Hire';
-        btn.disabled = !unlocked || state.points < cost;
-        btn.addEventListener('click', () => buyProducer(p.id));
-
+        node.appendChild(circle);
         node.appendChild(titleEl);
         node.appendChild(note);
-        node.appendChild(btn);
-        grid.appendChild(node);
+        row.appendChild(node);
       });
 
       // Unlock next tier node
       if(idx < PRODUCER_TIERS.length - 1){
         const nextTier = PRODUCER_TIERS[idx + 1];
         const unlockNode = document.createElement('div');
-        unlockNode.className = 'node';
+        unlockNode.className = 'tree-node';
         unlockNode.dataset.unlockTierId = nextTier.id;
 
+        const circle = document.createElement('button');
+        circle.type = 'button';
+        circle.className = 'tree-node-circle unlock';
+        const already = !!state.unlockedTiers[nextTier.id];
+        if(already) circle.classList.add('locked');
+        circle.textContent = '★';
+        circle.title = already ? 'Tier already unlocked' : 'Spend prestige to unlock';
+
+        circle.addEventListener('click', () => unlockTier(nextTier.id));
+
         const tTitle = document.createElement('div');
-        tTitle.className = 'node-title';
+        tTitle.className = 'tree-node-title';
         tTitle.textContent = `Unlock ${nextTier.name}`;
 
         const nNote = document.createElement('div');
-        nNote.className = 'node-note';
+        nNote.className = 'tree-node-note';
         nNote.textContent = `Cost: ${nextTier.unlockCost} prestige point${nextTier.unlockCost===1?'':'s'}`;
 
-        const btn = document.createElement('button');
-        btn.className = 'btn small-btn';
-        const already = !!state.unlockedTiers[nextTier.id];
-        btn.textContent = already ? 'Unlocked' : 'Unlock';
-        btn.disabled = already || (state.prestigePoints || 0) < nextTier.unlockCost;
-        btn.addEventListener('click', () => unlockTier(nextTier.id));
-
+        unlockNode.appendChild(circle);
         unlockNode.appendChild(tTitle);
         unlockNode.appendChild(nNote);
-        unlockNode.appendChild(btn);
-        grid.appendChild(unlockNode);
+        row.appendChild(unlockNode);
       }
 
-      tierDiv.appendChild(grid);
+      tierDiv.appendChild(row);
       producerTreeEl.appendChild(tierDiv);
     });
   }
@@ -693,13 +753,15 @@ window.addEventListener('DOMContentLoaded', () => {
       const cost = priceProducer(p.baseCost, lvl);
       const unlocked = !!state.unlockedTiers[tierId];
 
-      const note = node.querySelector('.node-note');
+      const note = node.querySelector('.tree-node-note');
       if(note){
         note.textContent = `+${p.basePps.toFixed(2)} $/s • Owned: ${lvl} • Cost: ${fmt(cost)}`;
       }
-      const btn = node.querySelector('button');
-      if(btn){
-        btn.disabled = !unlocked || state.points < cost;
+      const circle = node.querySelector('.tree-node-circle');
+      if(circle){
+        const cannot = !unlocked || state.points < cost;
+        circle.classList.toggle('locked', cannot);
+        circle.title = unlocked ? (cannot ? 'Not enough money' : 'Click to hire') : 'Tier locked';
       }
     });
 
@@ -709,14 +771,15 @@ window.addEventListener('DOMContentLoaded', () => {
       if(!tier) return;
       const cost = tier.unlockCost || 0;
       const already = !!state.unlockedTiers[tierId];
-      const btn = node.querySelector('button');
-      const note = node.querySelector('.node-note');
+      const circle = node.querySelector('.tree-node-circle');
+      const note   = node.querySelector('.tree-node-note');
       if(note){
         note.textContent = `Cost: ${cost} prestige point${cost===1?'':'s'}`;
       }
-      if(btn){
-        btn.disabled = already || (state.prestigePoints || 0) < cost;
-        btn.textContent = already ? 'Unlocked' : 'Unlock';
+      if(circle){
+        const cannot = already || (state.prestigePoints || 0) < cost;
+        circle.classList.toggle('locked', cannot);
+        circle.title = already ? 'Tier already unlocked' : (cannot ? 'Not enough prestige' : 'Click to unlock');
       }
     });
   }
