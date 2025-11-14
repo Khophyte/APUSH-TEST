@@ -148,22 +148,45 @@
     .producer-tier-header .status.unlocked{color:#a5f3fc}
     .producer-tier-header .status.locked{color:#fca5a5}
 
+    .tree-tier-graph{
+      position:relative;
+      padding:8px 4px 4px;
+    }
+
     .tree-row{
       position:relative;
-      padding:18px 8px 4px;
       display:flex;
       flex-wrap:wrap;
       justify-content:center;
       gap:24px;
     }
-    .tree-row::before{
+    .root-row{
+      margin-top:8px;
+      margin-bottom:12px;
+    }
+    .root-row::after{
       content:'';
       position:absolute;
-      top:36px;
-      left:8%;
-      right:8%;
+      left:50%;
+      top:52px;
+      width:2px;
+      height:20px;
+      transform:translateX(-50%);
+      background:linear-gradient(to bottom,rgba(59,130,246,0.0),rgba(59,130,246,0.8));
+      pointer-events:none;
+    }
+    .branch-row{
+      padding-top:18px;
+      padding-bottom:4px;
+    }
+    .branch-row::before{
+      content:'';
+      position:absolute;
+      top:0;
+      left:10%;
+      right:10%;
       height:2px;
-      background:linear-gradient(90deg,rgba(59,130,246,0.0),rgba(59,130,246,0.5),rgba(45,212,191,0.0));
+      background:linear-gradient(90deg,rgba(59,130,246,0.0),rgba(59,130,246,0.6),rgba(45,212,191,0.0));
       pointer-events:none;
     }
 
@@ -177,6 +200,18 @@
       text-align:center;
       z-index:1;
     }
+    .branch-row .tree-node::before{
+      content:'';
+      position:absolute;
+      top:-18px;
+      left:50%;
+      width:2px;
+      height:18px;
+      transform:translateX(-50%);
+      background:linear-gradient(to bottom,rgba(59,130,246,0.7),rgba(59,130,246,0.0));
+      pointer-events:none;
+    }
+
     .tree-node-circle{
       width:54px;
       height:54px;
@@ -194,6 +229,13 @@
       color:#e5edff;
       font-size:18px;
     }
+    .tree-node-root .tree-node-circle{
+      width:62px;
+      height:62px;
+      font-size:22px;
+      cursor:default;
+      box-shadow:0 0 0 2px rgba(15,23,42,1),0 0 26px rgba(56,189,248,0.55);
+    }
     .tree-node-circle.unlock{
       border-color:var(--accent-2);
       box-shadow:0 0 0 2px rgba(15,23,42,1),0 0 26px rgba(45,212,191,0.55);
@@ -205,6 +247,10 @@
     .tree-node-circle:hover{
       transform:scale(1.05);
       filter:brightness(1.08);
+    }
+    .tree-node-root .tree-node-circle:hover{
+      transform:none;
+      filter:none;
     }
     .tree-node-circle.locked{
       cursor:default;
@@ -668,10 +714,33 @@ window.addEventListener('DOMContentLoaded', () => {
       header.appendChild(status);
       tierDiv.appendChild(header);
 
-      const row = document.createElement('div');
-      row.className = 'tree-row';
+      const graph = document.createElement('div');
+      graph.className = 'tree-tier-graph';
 
-      // Producer nodes
+      // Root node row (purely visual)
+      const rootRow = document.createElement('div');
+      rootRow.className = 'tree-row root-row';
+      const rootNode = document.createElement('div');
+      rootNode.className = 'tree-node tree-node-root';
+      const rootCircle = document.createElement('div');
+      rootCircle.className = 'tree-node-circle' + (unlocked ? '' : ' locked');
+      rootCircle.textContent = idx === 0 ? 'I' : 'II';
+      const rootTitle = document.createElement('div');
+      rootTitle.className = 'tree-node-title';
+      rootTitle.textContent = 'Tier Core';
+      const rootNote = document.createElement('div');
+      rootNote.className = 'tree-node-note';
+      rootNote.textContent = unlocked ? 'Producers in this tier are active.' : 'Unlock this tier to use its producers.';
+      rootNode.appendChild(rootCircle);
+      rootNode.appendChild(rootTitle);
+      rootNode.appendChild(rootNote);
+      rootRow.appendChild(rootNode);
+      graph.appendChild(rootRow);
+
+      // Branch row: producers + unlock node
+      const row = document.createElement('div');
+      row.className = 'tree-row branch-row';
+
       tier.producers.forEach(p => {
         const level = state.producerLevels[p.id] || 0;
         const cost  = priceProducer(p.baseCost, level);
@@ -684,8 +753,8 @@ window.addEventListener('DOMContentLoaded', () => {
         const circle = document.createElement('button');
         circle.type = 'button';
         circle.className = 'tree-node-circle';
-        if(!unlocked) circle.classList.add('locked');
-        circle.textContent = '⏣'; // simple icon glyph
+        if(!unlocked || state.points < cost) circle.classList.add('locked');
+        circle.textContent = '⏣';
         circle.title = unlocked ? 'Click to hire' : 'Tier locked';
 
         circle.addEventListener('click', () => {
@@ -718,9 +787,11 @@ window.addEventListener('DOMContentLoaded', () => {
         circle.type = 'button';
         circle.className = 'tree-node-circle unlock';
         const already = !!state.unlockedTiers[nextTier.id];
-        if(already) circle.classList.add('locked');
+        if(already || (state.prestigePoints || 0) < nextTier.unlockCost){
+          circle.classList.add('locked');
+        }
         circle.textContent = '★';
-        circle.title = already ? 'Tier already unlocked' : 'Spend prestige to unlock';
+        circle.title = already ? 'Tier already unlocked' : 'Click to unlock';
 
         circle.addEventListener('click', () => unlockTier(nextTier.id));
 
@@ -738,7 +809,8 @@ window.addEventListener('DOMContentLoaded', () => {
         row.appendChild(unlockNode);
       }
 
-      tierDiv.appendChild(row);
+      graph.appendChild(row);
+      tierDiv.appendChild(graph);
       producerTreeEl.appendChild(tierDiv);
     });
   }
