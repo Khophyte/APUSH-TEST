@@ -157,7 +157,7 @@
       height:260px;
     }
 
-    /* NEW: radial orbit & lines */
+    /* Radial orbit & lines */
     .orbit{
       --angle:0deg;
       --radius:0px;
@@ -174,14 +174,15 @@
       --radius:0px;
       transform:translate(-50%, -50%);
     }
+
+    /* UPDATED: move lines up ~50px and send them behind nodes */
     .orbit.leaf::before{
       content:'';
       position:absolute;
-      top:50%;
+      top:calc(50% - 50px);  /* moved up */
       left:50%;
       width:var(--radius);
       height:2px;
-      /* in rotated space, negative X points toward the core */
       transform:translate(-100%, -50%);
       transform-origin:100% 50%;
       background:linear-gradient(90deg,
@@ -190,7 +191,9 @@
       );
       opacity:0.9;
       pointer-events:none;
+      z-index:0;             /* behind the nodes */
     }
+
     .orbit.leaf .tree-node{
       /* keep node content upright even though orbit is rotated */
       transform:rotate(calc(-1 * var(--angle)));
@@ -204,7 +207,7 @@
       min-width:90px;
       max-width:120px;
       text-align:center;
-      z-index:1;
+      z-index:1; /* above lines */
     }
 
     .tree-node-circle{
@@ -418,7 +421,7 @@ window.addEventListener('DOMContentLoaded', () => {
       unlockCost: 0,
       producers: [
         { id:'hand-loom',   name:'Hand Loom Workers',   basePps:0.05, baseCost:200  },
-        { id:'cobblers',    name:'Cobblers',            basePps:0.10, baseCost:400  }, // cobblers before blacksmiths
+        { id:'cobblers',    name:'Cobblers',            basePps:0.10, baseCost:400  },
         { id:'blacksmiths', name:'Blacksmith Shops',    basePps:0.15, baseCost:600  },
         { id:'print-shops', name:'Small Print Shops',   basePps:0.20, baseCost:900  },
       ]
