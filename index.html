@@ -179,11 +179,13 @@
       left:50%;
       width:var(--radius);
       height:2px;
-      transform:
-        translate(-50%,-50%)
-        rotate(var(--angle));
-      transform-origin:0 50%;
-      background:linear-gradient(90deg,rgba(59,130,246,0.0),rgba(59,130,246,0.9));
+      /* draw a straight line back toward the center in this transformed space */
+      transform:translate(-100%,-50%);
+      transform-origin:100% 50%;
+      background:linear-gradient(90deg,
+        rgba(59,130,246,0.9),
+        rgba(59,130,246,0.0)
+      );
       opacity:0.9;
       pointer-events:none;
     }
@@ -410,8 +412,8 @@ window.addEventListener('DOMContentLoaded', () => {
       unlockCost: 0,
       producers: [
         { id:'hand-loom',   name:'Hand Loom Workers',   basePps:0.05, baseCost:200  },
-        { id:'blacksmiths', name:'Blacksmith Shops',    basePps:0.15, baseCost:600  },
-        { id:'cobblers',    name:'Cobblers',            basePps:0.10, baseCost:400  },
+        { id:'cobblers',    name:'Cobblers',            basePps:0.10, baseCost:400  }, // swapped up
+        { id:'blacksmiths', name:'Blacksmith Shops',    basePps:0.15, baseCost:600  }, // swapped down
         { id:'print-shops', name:'Small Print Shops',   basePps:0.20, baseCost:900  },
       ]
     },
