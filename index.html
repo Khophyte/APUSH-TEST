@@ -157,20 +157,22 @@
       height:260px;
     }
 
+    /* NEW: radial orbit & lines */
     .orbit{
       --angle:0deg;
-      --radius:120px;
+      --radius:0px;
       position:absolute;
       top:50%;
       left:50%;
-      transform:translate(-50%,-50%);
-    }
-    .orbit.leaf{
       transform:
-        translate(-50%,-50%)
+        translate(-50%, -50%)
         rotate(var(--angle))
-        translate(var(--radius))
-        rotate(calc(-1 * var(--angle)));
+        translate(var(--radius));
+    }
+    .orbit.root{
+      --angle:0deg;
+      --radius:0px;
+      transform:translate(-50%, -50%);
     }
     .orbit.leaf::before{
       content:'';
@@ -179,8 +181,8 @@
       left:50%;
       width:var(--radius);
       height:2px;
-      /* draw a straight line back toward the center in this transformed space */
-      transform:translate(-100%,-50%);
+      /* in rotated space, negative X points toward the core */
+      transform:translate(-100%, -50%);
       transform-origin:100% 50%;
       background:linear-gradient(90deg,
         rgba(59,130,246,0.9),
@@ -188,6 +190,10 @@
       );
       opacity:0.9;
       pointer-events:none;
+    }
+    .orbit.leaf .tree-node{
+      /* keep node content upright even though orbit is rotated */
+      transform:rotate(calc(-1 * var(--angle)));
     }
 
     .tree-node{
@@ -412,8 +418,8 @@ window.addEventListener('DOMContentLoaded', () => {
       unlockCost: 0,
       producers: [
         { id:'hand-loom',   name:'Hand Loom Workers',   basePps:0.05, baseCost:200  },
-        { id:'cobblers',    name:'Cobblers',            basePps:0.10, baseCost:400  }, // swapped up
-        { id:'blacksmiths', name:'Blacksmith Shops',    basePps:0.15, baseCost:600  }, // swapped down
+        { id:'cobblers',    name:'Cobblers',            basePps:0.10, baseCost:400  }, // cobblers before blacksmiths
+        { id:'blacksmiths', name:'Blacksmith Shops',    basePps:0.15, baseCost:600  },
         { id:'print-shops', name:'Small Print Shops',   basePps:0.20, baseCost:900  },
       ]
     },
