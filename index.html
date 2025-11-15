@@ -287,7 +287,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const BASE_TARGET_SIZE = 56;
   const SAVE_KEY = 'apush5-save-v-boxes';
-  const SCHEMA   = 1;
+  const SCHEMA   = 2;
 
   const state = {
     points: 0,
@@ -327,6 +327,7 @@ window.addEventListener('DOMContentLoaded', () => {
     { id:'size', name:'Target Size', desc:'+10% button size',                type:'size', max:10, costFn: sizeCost }
   ];
 
+  /* FIVE TIERS NOW */
   const PRODUCER_TIERS = [
     {
       id: 'tier1',
@@ -348,6 +349,39 @@ window.addEventListener('DOMContentLoaded', () => {
         { id:'steamboats',   name:'Steamboat Freight Lines',   basePps:1.20, baseCost:9000  },
         { id:'local-banks',  name:'Local Bank Dividends',      basePps:2.50, baseCost:18000 },
         { id:'rr-investors', name:'Railroad Investors',        basePps:4.00, baseCost:30000 },
+      ]
+    },
+    {
+      id: 'tier3',
+      name: 'Tier III – Industrial Capital',
+      unlockCost: 2,
+      producers: [
+        { id:'textile-mills',   name:'Textile Mills',        basePps:6.0,  baseCost:60000  },
+        { id:'steel-works',     name:'Steel Works',          basePps:10.0, baseCost:120000 },
+        { id:'meatpacking',     name:'Meatpacking Plants',   basePps:16.0, baseCost:220000 },
+        { id:'factory-towns',   name:'Factory Towns',        basePps:25.0, baseCost:400000 },
+      ]
+    },
+    {
+      id: 'tier4',
+      name: 'Tier IV – Corporate Trusts',
+      unlockCost: 3,
+      producers: [
+        { id:'oil-trusts',        name:'Oil Trusts',             basePps:40.0,  baseCost:900000  },
+        { id:'steel-trusts',      name:'Steel Trusts',           basePps:60.0,  baseCost:1500000 },
+        { id:'telegraph-monop',   name:'Telegraph Monopolies',   basePps:80.0,  baseCost:2400000 },
+        { id:'department-stores', name:'Department Stores',      basePps:120.0, baseCost:3600000 },
+      ]
+    },
+    {
+      id: 'tier5',
+      name: 'Tier V – National Markets',
+      unlockCost: 4,
+      producers: [
+        { id:'national-railnet',  name:'National Rail Network',  basePps:180.0, baseCost:5500000  },
+        { id:'wall-st-brokers',   name:'Wall Street Brokers',    basePps:260.0, baseCost:8200000  },
+        { id:'investment-banks',  name:'Investment Banks',       basePps:360.0, baseCost:12000000 },
+        { id:'holding-companies', name:'Holding Companies',      basePps:500.0, baseCost:18000000 },
       ]
     }
   ];
