@@ -9,7 +9,7 @@
       --bg:#0b1220; --card:#111a2e; --muted:#a9b5d9; --text:#eef1fb;
       --accent:#7aa2ff; --accent-2:#66e3c4; --danger:#ff7a7a; --gold:#ffd166;
       --shadow:0 10px 30px rgba(0,0,0,.35); --radius:18px;
-      --target-size:56px; --target-pad:10px; --move-ms:260ms;
+      --target-size:56px; --move-ms:260ms;
     }
     *{box-sizing:border-box} html,body{height:100%}
     body{
@@ -22,7 +22,8 @@
     }
     .wrap{max-width:1100px;margin:0 auto;padding:24px}
     header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px}
-    h1{font-size:28px;margin:0}.subtitle{color:var(--muted);font-size:13px}
+    h1{font-size:28px;margin:0}
+    .subtitle{color:var(--muted);font-size:13px}
 
     .grid{display:grid;grid-template-columns:1.4fr .9fr .7fr;gap:16px}
     @media (max-width:920px){.grid{grid-template-columns:1fr}}
@@ -101,9 +102,12 @@
     .btn.gold{background:linear-gradient(180deg,#f7d36f,#d8aa39);color:#281a00}
     .btn.accent{background:linear-gradient(180deg,#7aa2ff,#4f7ef0);color:#0c1330}
     .btn.alt{background:linear-gradient(180deg,#66e3c4,#35c2a2);color:#06241b}
-    .btn.small-btn{padding:6px 8px;font-size:11px;border-radius:999px}
-
     .list{display:flex;flex-direction:column;gap:10px}
+    .item{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+    .item .meta{display:flex;flex-direction:column;gap:2px}
+    .item .title{font-weight:700}
+    .item .note{font-size:12px;color:var(--muted)}
+
     .money{font-size:24px;font-weight:900}
     .small{font-size:12px;color:var(--muted)}
 
@@ -128,14 +132,14 @@
     .choice.correct{border-color:var(--accent-2);background:rgba(102,227,196,.15)}
     .choice.wrong{border-color:var(--danger);background:rgba(255,122,122,.12)}
 
-    /* Producer skill tree – constellation layout */
+    /* Producer modal boxes */
     .producer-tier{
       margin-bottom:16px;
       padding:12px;
       border-radius:14px;
       background:rgba(15,23,42,0.95);
       border:1px solid rgba(148,163,184,0.4);
-      box-shadow:0 10px 30px rgba(0,0,0,.35);
+      box-shadow:0 8px 20px rgba(0,0,0,.35);
     }
     .producer-tier-header{
       display:flex;
@@ -148,118 +152,27 @@
     .producer-tier-header .status.unlocked{color:#a5f3fc}
     .producer-tier-header .status.locked{color:#fca5a5}
 
-    .tree-tier-graph{
-      position:relative;
-      padding:8px 4px 10px;
+    .producer-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+      gap:10px;
     }
-    .constellation{
-      position:relative;
-      height:260px;
-    }
-
-    /* Radial orbit & lines */
-    .orbit{
-      --angle:0deg;
-      --radius:0px;
-      position:absolute;
-      top:50%;
-      left:50%;
-      transform:
-        translate(-50%, -50%)
-        rotate(var(--angle))
-        translate(var(--radius));
-    }
-    .orbit.root{
-      --angle:0deg;
-      --radius:0px;
-      transform:translate(-50%, -50%);
-    }
-
-    /* UPDATED: move lines up ~50px and send them behind nodes */
-    .orbit.leaf::before{
-      content:'';
-      position:absolute;
-      top:calc(50% - 50px);  /* moved up */
-      left:50%;
-      width:var(--radius);
-      height:2px;
-      transform:translate(-100%, -50%);
-      transform-origin:100% 50%;
-      background:linear-gradient(90deg,
-        rgba(59,130,246,0.9),
-        rgba(59,130,246,0.0)
-      );
-      opacity:0.9;
-      pointer-events:none;
-      z-index:0;             /* behind the nodes */
-    }
-
-    .orbit.leaf .tree-node{
-      /* keep node content upright even though orbit is rotated */
-      transform:rotate(calc(-1 * var(--angle)));
-    }
-
-    .tree-node{
-      position:relative;
+    .producer-card{
+      border-radius:12px;
+      background:rgba(15,23,42,0.9);
+      border:1px solid rgba(148,163,184,0.5);
+      padding:10px 12px;
       display:flex;
       flex-direction:column;
-      align-items:center;
-      min-width:90px;
-      max-width:120px;
-      text-align:center;
-      z-index:1; /* above lines */
+      gap:6px;
+      font-size:12px;
     }
-
-    .tree-node-circle{
-      width:54px;
-      height:54px;
-      border-radius:50%;
-      border:2px solid rgba(129,140,248,0.9);
-      background:
-        radial-gradient(140% 140% at 30% 25%,rgba(255,255,255,.3) 0%,rgba(255,255,255,.07) 45%,rgba(15,23,42,1) 80%),
-        linear-gradient(180deg,#1d2a4d,#020617);
-      box-shadow:0 0 0 2px rgba(15,23,42,0.9),0 0 20px rgba(56,189,248,0.45);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      transition:transform .08s ease, box-shadow .15s ease, filter .15s ease, border-color .15s ease;
-      color:#e5edff;
-      font-size:18px;
-    }
-    .tree-node-root .tree-node-circle{
-      width:70px;
-      height:70px;
-      font-size:24px;
-      cursor:default;
-      box-shadow:0 0 0 2px rgba(15,23,42,1),0 0 28px rgba(56,189,248,0.7);
-    }
-    .tree-node-circle.unlock{
-      border-color:var(--accent-2);
-      box-shadow:0 0 0 2px rgba(15,23,42,1),0 0 26px rgba(45,212,191,0.55);
-      background:
-        radial-gradient(140% 140% at 30% 25%,rgba(255,255,255,.35) 0%,rgba(255,255,255,.1) 45%,rgba(15,23,42,1) 80%),
-        linear-gradient(180deg,#22c55e,#0f766e);
-      color:#022c22;
-    }
-    .tree-node-circle:hover{
-      transform:scale(1.05);
-      filter:brightness(1.08);
-    }
-    .tree-node-root .tree-node-circle:hover{
-      transform:none;
-      filter:none;
-    }
-    .tree-node-circle.locked{
-      cursor:default;
-      opacity:0.45;
-      box-shadow:0 0 0 1px rgba(15,23,42,1);
-      border-color:rgba(148,163,184,0.5);
-      filter:grayscale(.35);
-    }
-
-    .tree-node-title{font-size:12px;margin-top:6px;margin-bottom:2px}
-    .tree-node-note{font-size:11px;color:var(--muted);min-height:30px}
+    .producer-card.locked{opacity:.5}
+    .producer-card-title{font-weight:600}
+    .producer-card-note{color:var(--muted);font-size:11px}
+    .producer-card-footer{margin-top:4px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .producer-card-footer .cost{font-size:11px;color:var(--muted)}
+    .producer-card-footer .btn{padding:6px 10px;font-size:11px;border-radius:999px}
   </style>
 </head>
 <body>
@@ -314,15 +227,15 @@
       </div>
     </section>
 
-    <!-- Producers summary / open tree -->
+    <!-- Producers summary / open modal -->
     <section class="card">
       <div class="head"><strong>Producers</strong></div>
       <div class="body">
         <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px;">
           <div class="small">Passive income: <span id="producerPps">$0.00</span> /s</div>
-          <button id="openProducerTree" class="btn">Open Producer Tree</button>
+          <button id="openProducerTree" class="btn">Open Producer Upgrades</button>
         </div>
-        <div class="small">Unlock tiers with prestige points, then buy producers inside the skill tree.</div>
+        <div class="small">Unlock tiers with prestige points, then hire producers for passive $/s.</div>
       </div>
     </section>
   </div>
@@ -344,10 +257,10 @@
   </div>
 </dialog>
 
-<!-- Producer Skill Tree Modal -->
+<!-- Producer Modal -->
 <dialog id="producerModal" aria-labelledby="producerTitle" aria-describedby="producerDesc">
   <div class="modal-head">
-    <strong id="producerTitle">Producer Skill Tree</strong>
+    <strong id="producerTitle">Producer Upgrades</strong>
     <button id="closeProducerModal" class="btn">✖</button>
   </div>
   <div class="modal-body">
@@ -373,8 +286,8 @@ window.addEventListener('DOMContentLoaded', () => {
   })();
 
   const BASE_TARGET_SIZE = 56;
-  const SAVE_KEY = 'apush5-save-v4';
-  const SCHEMA   = 4;
+  const SAVE_KEY = 'apush5-save-v-boxes';
+  const SCHEMA   = 1;
 
   const state = {
     points: 0,
@@ -449,9 +362,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
   function save(){
     if(!STORAGE_OK) return;
-    try{
-      localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-    }catch(e){ console.warn('save failed', e); }
+    try{ localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }
+    catch(e){ console.warn('save failed', e); }
   }
   function load(){
     if(!STORAGE_OK) return;
@@ -460,11 +372,6 @@ window.addEventListener('DOMContentLoaded', () => {
     try{
       const data = JSON.parse(raw);
       Object.assign(state, data);
-      if(!data.schemaVersion || data.schemaVersion < SCHEMA){
-        migrate();
-        state.schemaVersion = SCHEMA;
-        save();
-      }
     }catch(e){ console.warn('load failed', e); }
   }
 
@@ -472,15 +379,6 @@ window.addEventListener('DOMContentLoaded', () => {
     if(!Array.isArray(state.upgrades)) state.upgrades = [];
     if(!state.producerLevels || typeof state.producerLevels !== 'object') state.producerLevels = {};
     if(!state.unlockedTiers || typeof state.unlockedTiers !== 'object') state.unlockedTiers = {};
-  }
-
-  function migrate(){
-    ensureStructures();
-    if(state.unlockedTiers['tier1'] === undefined){
-      state.unlockedTiers['tier1'] = true;
-    }
-    applyTargetSizeFromLevel();
-    recomputePPS();
   }
 
   function initContent(){
@@ -712,160 +610,129 @@ window.addEventListener('DOMContentLoaded', () => {
       header.appendChild(status);
       tierDiv.appendChild(header);
 
-      const graph = document.createElement('div');
-      graph.className = 'tree-tier-graph constellation';
+      const grid = document.createElement('div');
+      grid.className = 'producer-grid';
 
-      /* Root orbit (center) */
-      const rootOrbit = document.createElement('div');
-      rootOrbit.className = 'orbit root';
-      const rootNode = document.createElement('div');
-      rootNode.className = 'tree-node tree-node-root';
-      const rootCircle = document.createElement('div');
-      rootCircle.className = 'tree-node-circle' + (unlocked ? '' : ' locked');
-      rootCircle.textContent = idx === 0 ? 'I' : 'II';
-      const rootTitle = document.createElement('div');
-      rootTitle.className = 'tree-node-title';
-      rootTitle.textContent = 'Tier Core';
-      const rootNote = document.createElement('div');
-      rootNote.className = 'tree-node-note';
-      rootNote.textContent = unlocked ? 'Producers in this tier are active.' : 'Unlock this tier to use its producers.';
-      rootNode.appendChild(rootCircle);
-      rootNode.appendChild(rootTitle);
-      rootNode.appendChild(rootNote);
-      rootOrbit.appendChild(rootNode);
-      graph.appendChild(rootOrbit);
+      tier.producers.forEach(p => {
+        const lvl  = state.producerLevels[p.id] || 0;
+        const cost = priceProducer(p.baseCost, lvl);
 
-      /* Orbiting nodes: producers + optional unlock */
-      const nodes = [];
-      tier.producers.forEach(p => nodes.push({kind:'prod', data:p}));
-      if(idx < PRODUCER_TIERS.length - 1){
-        nodes.push({kind:'unlock', data:PRODUCER_TIERS[idx+1]});
-      }
+        const card = document.createElement('div');
+        card.className = 'producer-card';
+        if(!unlocked) card.classList.add('locked');
+        card.dataset.producerId = p.id;
+        card.dataset.tierId = tier.id;
 
-      const total = nodes.length;
-      const angleStart = -90;   // start at top
-      const step = 360 / total;
-      const radiusProd   = 115;
-      const radiusUnlock = 150;
+        const tEl = document.createElement('div');
+        tEl.className = 'producer-card-title';
+        tEl.textContent = p.name;
 
-      nodes.forEach((info, i) => {
-        const angle = angleStart + step * i;
-        const orbit = document.createElement('div');
-        orbit.className = 'orbit leaf';
-        orbit.style.setProperty('--angle', angle + 'deg');
-        orbit.style.setProperty('--radius', (info.kind === 'unlock' ? radiusUnlock : radiusProd) + 'px');
+        const note = document.createElement('div');
+        note.className = 'producer-card-note';
+        note.textContent = `+${p.basePps.toFixed(2)} $/s • Owned: ${lvl}`;
 
-        if(info.kind === 'prod'){
-          const p = info.data;
-          const level = state.producerLevels[p.id] || 0;
-          const cost  = priceProducer(p.baseCost, level);
+        const footer = document.createElement('div');
+        footer.className = 'producer-card-footer';
+        const costEl = document.createElement('div');
+        costEl.className = 'cost';
+        costEl.textContent = `Cost: ${fmt(cost)}`;
 
-          const node = document.createElement('div');
-          node.className = 'tree-node';
-          node.dataset.producerId = p.id;
-          node.dataset.tierId = tier.id;
+        const btn = document.createElement('button');
+        btn.className = 'btn accent';
+        btn.textContent = 'Hire';
+        btn.disabled = !unlocked || state.points < cost;
+        btn.addEventListener('click', () => buyProducer(p.id));
 
-          const circle = document.createElement('button');
-          circle.type = 'button';
-          circle.className = 'tree-node-circle';
-          if(!unlocked || state.points < cost) circle.classList.add('locked');
-          circle.textContent = '⏣';
-          circle.title = unlocked ? 'Click to hire' : 'Tier locked';
+        footer.appendChild(costEl);
+        footer.appendChild(btn);
 
-          circle.addEventListener('click', () => {
-            if(!state.unlockedTiers[tier.id]) return;
-            buyProducer(p.id);
-          });
-
-          const tTitle = document.createElement('div');
-          tTitle.className = 'tree-node-title';
-          tTitle.textContent = p.name;
-
-          const note = document.createElement('div');
-          note.className = 'tree-node-note';
-          note.textContent = `+${p.basePps.toFixed(2)} $/s • Owned: ${level} • Cost: ${fmt(cost)}`;
-
-          node.appendChild(circle);
-          node.appendChild(tTitle);
-          node.appendChild(note);
-          orbit.appendChild(node);
-        } else {
-          const nextTier = info.data;
-          const unlockNode = document.createElement('div');
-          unlockNode.className = 'tree-node';
-          unlockNode.dataset.unlockTierId = nextTier.id;
-
-          const circle = document.createElement('button');
-          circle.type = 'button';
-          circle.className = 'tree-node-circle unlock';
-          const already = !!state.unlockedTiers[nextTier.id];
-          if(already || (state.prestigePoints || 0) < nextTier.unlockCost){
-            circle.classList.add('locked');
-          }
-          circle.textContent = '★';
-          circle.title = already ? 'Tier already unlocked' : 'Click to unlock';
-
-          circle.addEventListener('click', () => unlockTier(nextTier.id));
-
-          const tTitle = document.createElement('div');
-          tTitle.className = 'tree-node-title';
-          tTitle.textContent = `Unlock ${nextTier.name}`;
-
-          const nNote = document.createElement('div');
-          nNote.className = 'tree-node-note';
-          nNote.textContent = `Cost: ${nextTier.unlockCost} prestige point${nextTier.unlockCost===1?'':'s'}`;
-
-          unlockNode.appendChild(circle);
-          unlockNode.appendChild(tTitle);
-          unlockNode.appendChild(nNote);
-          orbit.appendChild(unlockNode);
-        }
-
-        graph.appendChild(orbit);
+        card.appendChild(tEl);
+        card.appendChild(note);
+        card.appendChild(footer);
+        grid.appendChild(card);
       });
 
-      tierDiv.appendChild(graph);
+      /* Unlock next tier card */
+      if(idx < PRODUCER_TIERS.length - 1){
+        const nextTier = PRODUCER_TIERS[idx+1];
+        const unlockCard = document.createElement('div');
+        unlockCard.className = 'producer-card';
+        unlockCard.dataset.unlockTierId = nextTier.id;
+
+        const tEl = document.createElement('div');
+        tEl.className = 'producer-card-title';
+        tEl.textContent = `Unlock ${nextTier.name}`;
+
+        const note = document.createElement('div');
+        note.className = 'producer-card-note';
+        note.textContent = `Cost: ${nextTier.unlockCost} prestige point${nextTier.unlockCost===1?'':'s'}`;
+
+        const footer = document.createElement('div');
+        footer.className = 'producer-card-footer';
+        const costEl = document.createElement('div');
+        costEl.className = 'cost';
+        costEl.textContent = '';
+
+        const btn = document.createElement('button');
+        btn.className = 'btn alt';
+        btn.textContent = 'Unlock';
+        const already = !!state.unlockedTiers[nextTier.id];
+        const cannot = already || (state.prestigePoints || 0) < nextTier.unlockCost;
+        if(cannot) btn.disabled = true;
+        btn.addEventListener('click', () => unlockTier(nextTier.id));
+
+        footer.appendChild(costEl);
+        footer.appendChild(btn);
+
+        unlockCard.appendChild(tEl);
+        unlockCard.appendChild(note);
+        unlockCard.appendChild(footer);
+        grid.appendChild(unlockCard);
+      }
+
+      tierDiv.appendChild(grid);
       producerTreeEl.appendChild(tierDiv);
     });
   }
 
   function updateProducerAffordability(){
-    $$('[data-producer-id]').forEach(node => {
-      const id = node.dataset.producerId;
-      const tierId = node.dataset.tierId;
+    $$('[data-producer-id]').forEach(card => {
+      const id = card.dataset.producerId;
+      const tierId = card.dataset.tierId;
       const p = findProducerById(id);
       if(!p) return;
       const lvl = state.producerLevels[id] || 0;
       const cost = priceProducer(p.baseCost, lvl);
       const unlocked = !!state.unlockedTiers[tierId];
 
-      const note = node.querySelector('.tree-node-note');
+      const note = card.querySelector('.producer-card-note');
       if(note){
-        note.textContent = `+${p.basePps.toFixed(2)} $/s • Owned: ${lvl} • Cost: ${fmt(cost)}`;
+        note.textContent = `+${p.basePps.toFixed(2)} $/s • Owned: ${lvl}`;
       }
-      const circle = node.querySelector('.tree-node-circle');
-      if(circle){
-        const cannot = !unlocked || state.points < cost;
-        circle.classList.toggle('locked', cannot);
-        circle.title = unlocked ? (cannot ? 'Not enough money' : 'Click to hire') : 'Tier locked';
+      const costEl = card.querySelector('.cost');
+      if(costEl) costEl.textContent = `Cost: ${fmt(cost)}`;
+      const btn = card.querySelector('button');
+      if(btn){
+        btn.disabled = !unlocked || state.points < cost;
       }
+      card.classList.toggle('locked', !unlocked);
     });
 
-    $$('[data-unlock-tier-id]').forEach(node => {
-      const tierId = node.dataset.unlockTierId;
+    $$('[data-unlock-tier-id]').forEach(card => {
+      const tierId = card.dataset.unlockTierId;
       const tier   = PRODUCER_TIERS.find(t => t.id === tierId);
       if(!tier) return;
       const cost = tier.unlockCost || 0;
       const already = !!state.unlockedTiers[tierId];
-      const circle = node.querySelector('.tree-node-circle');
-      const note   = node.querySelector('.tree-node-note');
+      const btn = card.querySelector('button');
+      const note = card.querySelector('.producer-card-note');
       if(note){
         note.textContent = `Cost: ${cost} prestige point${cost===1?'':'s'}`;
       }
-      if(circle){
+      if(btn){
         const cannot = already || (state.prestigePoints || 0) < cost;
-        circle.classList.toggle('locked', cannot);
-        circle.title = already ? 'Tier already unlocked' : (cannot ? 'Not enough prestige' : 'Click to unlock');
+        btn.disabled = cannot;
+        btn.textContent = already ? 'Unlocked' : 'Unlock';
       }
     });
   }
@@ -883,9 +750,9 @@ window.addEventListener('DOMContentLoaded', () => {
   function moveTarget(){
     const a = clickArea.getBoundingClientRect();
     const s = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--target-size')) || BASE_TARGET_SIZE;
-    const p = 10;
-    const x = p + Math.random() * Math.max(0, a.width  - s - p);
-    const y = p + Math.random() * Math.max(0, a.height - s - p);
+    const pad = 10;
+    const x = pad + Math.random() * Math.max(0, a.width  - s - pad);
+    const y = pad + Math.random() * Math.max(0, a.height - s - pad);
     targetBtn.style.left = x + 'px';
     targetBtn.style.top  = y + 'px';
   }
@@ -1074,7 +941,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
   load();
   initContent();
-  migrate();
   renderUpgrades();
   renderProducerTree();
   updateHUD();
