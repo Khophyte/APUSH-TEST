@@ -287,7 +287,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const BASE_TARGET_SIZE = 56;
   const SAVE_KEY = 'apush5-save-v-boxes';
-  const SCHEMA   = 3;
+  const SCHEMA   = 5;
 
   const state = {
     points: 0,
@@ -321,11 +321,11 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   function sizeCost(level){ const base = 350; return Math.floor(base * pow(2.1, level)); }
 
-  // Tiered producer price scaling
-  function priceProducerTiered(baseCost, level, tierIndex){
-    const scaling = [1.20, 1.30, 1.50, 1.70, 2.00];
-    const mult = scaling[tierIndex] ?? 1.55;
-    return Math.floor(baseCost * Math.pow(mult, level));
+  // NEW producer cost formula:
+  // cost(level -> level+1) = basePps * (level+1) * 20 / tierNumber
+  function producerCost(basePps, level, tierIndex){
+    const tierNumber = (tierIndex ?? 0) + 1; // 1..5
+    return Math.floor(basePps * (level + 1) * 20 / tierNumber);
   }
 
   const UPGRADE_DATA = [
@@ -333,16 +333,17 @@ window.addEventListener('DOMContentLoaded', () => {
     { id:'size', name:'Target Size', desc:'+10% button size',                type:'size', max:10, costFn: sizeCost }
   ];
 
+  // PPS values you specified
   const PRODUCER_TIERS = [
     {
       id: 'tier1',
       name: 'Tier I – Cottage & Artisan',
       unlockCost: 0,
       producers: [
-        { id:'hand-loom',   name:'Hand Loom Workers',   basePps:0.05, baseCost:200  },
-        { id:'cobblers',    name:'Cobblers',            basePps:0.07, baseCost:400  },
-        { id:'blacksmiths', name:'Blacksmith Shops',    basePps:0.10, baseCost:600  },
-        { id:'print-shops', name:'Small Print Shops',   basePps:0.14, baseCost:900  },
+        { id:'hand-loom',   name:'Hand Loom Workers',   basePps:1 },
+        { id:'cobblers',    name:'Cobblers',            basePps:2 },
+        { id:'blacksmiths', name:'Blacksmith Shops',    basePps:5 },
+        { id:'print-shops', name:'Small Print Shops',   basePps:10 },
       ]
     },
     {
@@ -350,10 +351,10 @@ window.addEventListener('DOMContentLoaded', () => {
       name: 'Tier II – Transport & Credit',
       unlockCost: 1,
       producers: [
-        { id:'canal-tolls',  name:'Canal Toll Investors',      basePps:0.30, baseCost:4500  },
-        { id:'steamboats',   name:'Steamboat Freight Lines',   basePps:0.50, baseCost:9000  },
-        { id:'local-banks',  name:'Local Bank Dividends',      basePps:0.80, baseCost:18000 },
-        { id:'rr-investors', name:'Railroad Investors',        basePps:1.10, baseCost:30000 },
+        { id:'canal-tolls',  name:'Canal Toll Investors',      basePps:20 },
+        { id:'steamboats',   name:'Steamboat Freight Lines',   basePps:40 },
+        { id:'local-banks',  name:'Local Bank Dividends',      basePps:80 },
+        { id:'rr-investors', name:'Railroad Investors',        basePps:150 },
       ]
     },
     {
@@ -361,10 +362,10 @@ window.addEventListener('DOMContentLoaded', () => {
       name: 'Tier III – Industrial Capital',
       unlockCost: 2,
       producers: [
-        { id:'textile-mills',   name:'Textile Mills',        basePps:2.0,  baseCost:60000  },
-        { id:'steel-works',     name:'Steel Works',          basePps:3.5,  baseCost:120000 },
-        { id:'meatpacking',     name:'Meatpacking Plants',   basePps:5.0,  baseCost:220000 },
-        { id:'factory-towns',   name:'Factory Towns',        basePps:7.5,  baseCost:400000 },
+        { id:'textile-mills',   name:'Textile Mills',        basePps:500 },
+        { id:'steel-works',     name:'Steel Works',          basePps:1000 },
+        { id:'meatpacking',     name:'Meatpacking Plants',   basePps:1500 },
+        { id:'factory-towns',   name:'Factory Towns',        basePps:2000 },
       ]
     },
     {
@@ -372,10 +373,10 @@ window.addEventListener('DOMContentLoaded', () => {
       name: 'Tier IV – Corporate Trusts',
       unlockCost: 3,
       producers: [
-        { id:'oil-trusts',        name:'Oil Trusts',             basePps:10.0, baseCost:900000  },
-        { id:'steel-trusts',      name:'Steel Trusts',           basePps:14.0, baseCost:1500000 },
-        { id:'telegraph-monop',   name:'Telegraph Monopolies',   basePps:18.0, baseCost:2400000 },
-        { id:'department-stores', name:'Department Stores',      basePps:25.0, baseCost:3600000 },
+        { id:'oil-trusts',        name:'Oil Trusts',             basePps:10000 },
+        { id:'steel-trusts',      name:'Steel Trusts',           basePps:20000 },
+        { id:'telegraph-monop',   name:'Telegraph Monopolies',   basePps:50000 },
+        { id:'department-stores', name:'Department Stores',      basePps:100000 },
       ]
     },
     {
@@ -383,10 +384,10 @@ window.addEventListener('DOMContentLoaded', () => {
       name: 'Tier V – National Markets',
       unlockCost: 4,
       producers: [
-        { id:'national-railnet',  name:'National Rail Network',  basePps:35.0, baseCost:5500000  },
-        { id:'wall-st-brokers',   name:'Wall Street Brokers',    basePps:50.0, baseCost:8200000  },
-        { id:'investment-banks',  name:'Investment Banks',       basePps:70.0, baseCost:12000000 },
-        { id:'holding-companies', name:'Holding Companies',      basePps:100.0, baseCost:18000000 },
+        { id:'national-railnet',  name:'National Rail Network',  basePps:1000000 },
+        { id:'wall-st-brokers',   name:'Wall Street Brokers',    basePps:2500000 },
+        { id:'investment-banks',  name:'Investment Banks',       basePps:7500000 },
+        { id:'holding-companies', name:'Holding Companies',      basePps:17500000 },
       ]
     }
   ];
@@ -425,7 +426,6 @@ window.addEventListener('DOMContentLoaded', () => {
     if(state.upgrades.length === 0){
       state.upgrades = UPGRADE_DATA.map(u => ({...u, level:0}));
     }
-    // Always ensure Tier 1 is available at least once
     if(state.unlockedTiers['tier1'] === undefined){
       state.unlockedTiers['tier1'] = true;
     }
@@ -602,7 +602,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if(!tierId || !state.unlockedTiers[tierId]) return;
 
     const level = state.producerLevels[prodId] || 0;
-    const cost = priceProducerTiered(p.baseCost, level, tierIndex);
+    const cost = producerCost(p.basePps, level, tierIndex);
     if(state.points < cost) return;
 
     state.points -= cost;
@@ -659,7 +659,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
       tier.producers.forEach(p => {
         const lvl  = state.producerLevels[p.id] || 0;
-        const cost = priceProducerTiered(p.baseCost, lvl, idx);
+        const cost = producerCost(p.basePps, lvl, idx);
 
         const card = document.createElement('div');
         card.className = 'producer-card';
@@ -747,7 +747,7 @@ window.addEventListener('DOMContentLoaded', () => {
       if(!p) return;
       const lvl = state.producerLevels[id] || 0;
       const tierIndex = PRODUCER_TIERS.findIndex(t => t.id === tierId);
-      const cost = priceProducerTiered(p.baseCost, lvl, tierIndex);
+      const cost = producerCost(p.basePps, lvl, tierIndex);
       const unlocked = !!state.unlockedTiers[tierId];
 
       const note = card.querySelector('.producer-card-note');
@@ -920,11 +920,9 @@ window.addEventListener('DOMContentLoaded', () => {
     if(!canPrestige()) return;
     if(!confirm('Prestige? Reset money and upgrades to gain +1 prestige point (stacking multiplier from unspent points).')) return;
 
-    // Prestige points and unlocked tiers PERSIST
     state.totalPrestige = (state.totalPrestige || 0) + 1;
     state.prestigePoints = (state.prestigePoints || 0) + 1;
 
-    // Reset progress-only stuff
     state.points = 0;
     state.basePpc = 1;
     state.ppcMult = 1;
@@ -935,7 +933,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     state.upgrades.forEach(u => u.level = 0);
     state.producerLevels = {};
-    // DO NOT touch state.unlockedTiers, they are permanent unlocks
+    // keep unlockedTiers
 
     applyTargetSizeFromLevel();
     recomputePPS();
