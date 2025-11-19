@@ -173,6 +173,11 @@
     .producer-card-footer{margin-top:4px;display:flex;justify-content:space-between;align-items:center;gap:8px}
     .producer-card-footer .cost{font-size:11px;color:var(--muted)}
     .producer-card-footer .btn{padding:6px 10px;font-size:11px;border-radius:999px}
+
+    /* Settings dialog */
+    .settings-group{margin-bottom:12px}
+    .settings-group label{display:flex;align-items:center;gap:8px;font-size:13px}
+    .settings-group input[type="checkbox"]{width:16px;height:16px}
   </style>
 </head>
 <body>
@@ -184,6 +189,7 @@
     </div>
     <div class="row">
       <button id="saveBtn" class="btn alt">💾 Save</button>
+      <button id="settingsBtn" class="btn">⚙️ Settings</button>
       <button id="prestigeBtn" class="btn gold">🌀 Prestige</button>
     </div>
   </header>
@@ -271,6 +277,23 @@
   </div>
 </dialog>
 
+<!-- Settings Modal -->
+<dialog id="settingsModal" aria-labelledby="settingsTitle">
+  <div class="modal-head">
+    <strong id="settingsTitle">Settings</strong>
+    <button id="closeSettings" class="btn">✖</button>
+  </div>
+  <div class="modal-body">
+    <div class="settings-group">
+      <label>
+        <input type="checkbox" id="shortNumsToggle" />
+        <span>Use shortened numbers (1k, 1.2M, 3.4B)</span>
+      </label>
+    </div>
+    <div class="small">Number formatting applies to money, costs, and goals. PPS still shows as exact $/s.</div>
+  </div>
+</dialog>
+
 <script>
 window.addEventListener('DOMContentLoaded', () => {
   const $  = s => document.querySelector(s);
@@ -287,7 +310,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const BASE_TARGET_SIZE = 56;
   const SAVE_KEY = 'apush5-save-v-boxes';
-  const SCHEMA   = 5;
+  const SCHEMA   = 6;
 
   const state = {
     points: 0,
@@ -306,7 +329,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
     boostEndsAt: 0,
     lastTick: performance.now(),
-    schemaVersion: SCHEMA
+    schemaVersion: SCHEMA,
+
+    settings: {
+      shortNums: true
+    }
   };
 
   const pow = Math.pow;
@@ -321,8 +348,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   function sizeCost(level){ const base = 350; return Math.floor(base * pow(2.1, level)); }
 
-  // NEW producer cost formula:
-  // cost(level -> level+1) = basePps * (level+1) * 20 / tierNumber
+  // Producer cost: cost(level -> level+1) = basePps * (level+1) * 20 / tierNumber
   function producerCost(basePps, level, tierIndex){
     const tierNumber = (tierIndex ?? 0) + 1; // 1..5
     return Math.floor(basePps * (level + 1) * 20 / tierNumber);
@@ -333,7 +359,6 @@ window.addEventListener('DOMContentLoaded', () => {
     { id:'size', name:'Target Size', desc:'+10% button size',                type:'size', max:10, costFn: sizeCost }
   ];
 
-  // PPS values you specified
   const PRODUCER_TIERS = [
     {
       id: 'tier1',
@@ -419,6 +444,11 @@ window.addEventListener('DOMContentLoaded', () => {
     if(!Array.isArray(state.upgrades)) state.upgrades = [];
     if(!state.producerLevels || typeof state.producerLevels !== 'object') state.producerLevels = {};
     if(!state.unlockedTiers || typeof state.unlockedTiers !== 'object') state.unlockedTiers = {};
+    if(!state.settings || typeof state.settings !== 'object'){
+      state.settings = { shortNums: true };
+    } else if(typeof state.settings.shortNums !== 'boolean'){
+      state.settings.shortNums = true;
+    }
   }
 
   function initContent(){
@@ -459,14 +489,26 @@ window.addEventListener('DOMContentLoaded', () => {
   const qText     = $('#qText');
   const qChoices  = $('#qChoices');
 
-  const prestigeBtn = $('#prestigeBtn');
-  const saveBtn     = $('#saveBtn');
+  const prestigeBtn   = $('#prestigeBtn');
+  const saveBtn       = $('#saveBtn');
+  const settingsBtn   = $('#settingsBtn');
+  const settingsModal = $('#settingsModal');
+  const closeSettings = $('#closeSettings');
+  const shortNumsToggle = $('#shortNumsToggle');
 
-  function fmt(n){
-    if(n>=1e9) return '$'+(n/1e9).toFixed(2)+'B';
-    if(n>=1e6) return '$'+(n/1e6).toFixed(2)+'M';
-    if(n>=1e3) return '$'+(n/1e3).toFixed(2)+'k';
+  // --- Number formatting helpers ---
+  function fmtShort(n){
+    if(n >= 1e9) return '$'+(n/1e9).toFixed(1)+'B';
+    if(n >= 1e6) return '$'+(n/1e6).toFixed(1)+'M';
+    if(n >= 1e3) return '$'+(n/1e3).toFixed(1)+'k';
     return '$'+Math.floor(n);
+  }
+  function fmtFull(n){
+    return '$'+Math.floor(n).toLocaleString('en-US');
+  }
+  function fmt(n){
+    const useShort = state.settings && state.settings.shortNums;
+    return useShort ? fmtShort(n) : fmtFull(n);
   }
 
   function updateHUD(){
@@ -960,6 +1002,20 @@ window.addEventListener('DOMContentLoaded', () => {
     note.style.opacity = '0.9';
     saveBtn.after(note);
     setTimeout(() => note.remove(), 1200);
+  });
+
+  // Settings interactions
+  settingsBtn.addEventListener('click', () => {
+    shortNumsToggle.checked = !!(state.settings && state.settings.shortNums);
+    settingsModal.showModal();
+  });
+  closeSettings.addEventListener('click', () => settingsModal.close());
+  shortNumsToggle.addEventListener('change', () => {
+    state.settings.shortNums = shortNumsToggle.checked;
+    updateHUD();
+    renderUpgrades();
+    renderProducerTree();
+    save();
   });
 
   function tick(){
